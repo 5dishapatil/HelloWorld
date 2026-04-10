@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>SBI Online Banking – Training Simulation</title>
+<title>SBI Online Banking - Training Simulation</title>
 <style>
 /* =====================================================================
    SBI TRAINING SIMULATION – STYLESHEET
@@ -1870,23 +1870,24 @@ function onUsernameInput() {
   if (v.length > 0) {
     document.getElementById('note-username').classList.add('show');
     document.getElementById('err-username').classList.remove('show');
-    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+    // Only auto-advance if we are currently on Step 1
+    if (state.loginStep === 1) stepTimer = setTimeout(() => activateLoginStep(2), 2000);
   }
 }
 
 function onPasswordInput() {
   const v = document.getElementById('inp-password').value;
-  clearTimeout(stepTimer); // Reset timer while typing
+  clearTimeout(stepTimer); 
   
-  // Regex: Min 8 chars, 1 letter, 1 number, 1 symbol
-  const strongPwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+  const strongPwRegex = /^(?=.*)(?=.*\d)(?=.*).{8,}$/;
   const errEl = document.getElementById('err-password');
   const noteEl = document.getElementById('note-password');
 
   if (strongPwRegex.test(v)) {
     noteEl.classList.add('show');
     errEl.classList.remove('show');
-    stepTimer = setTimeout(() => activateLoginStep(3), 2000); // 5-second delay
+    // Only auto-advance if we are currently on Step 2
+    if (state.loginStep === 2) stepTimer = setTimeout(() => activateLoginStep(3), 2000); 
   } else {
     noteEl.classList.remove('show');
     errEl.classList.add('show');
@@ -1900,7 +1901,8 @@ function onCaptchaInput() {
   if (v === correct) {
     document.getElementById('note-captcha').classList.add('show');
     document.getElementById('err-captcha').classList.remove('show');
-    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+    // FIX: Advance to step 4, not step 2!
+    if (state.loginStep === 3) stepTimer = setTimeout(() => activateLoginStep(4), 2000);
   } else {
     document.getElementById('note-captcha').classList.remove('show');
   }
@@ -2024,26 +2026,38 @@ function activateForgotStep(step) {
 function fpStep1Input() {
   const v = document.getElementById('fp-username').value.trim();
   clearTimeout(stepTimer);
-  if (v) { document.getElementById('fp-note-user').classList.add('show'); document.getElementById('fp-err-user').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
- }
+  if (v) { 
+    document.getElementById('fp-note-user').classList.add('show'); 
+    document.getElementById('fp-err-user').classList.remove('show'); 
+    if (state.forgotStep === 1) stepTimer = setTimeout(() => activateForgotStep(2), 2000); 
+  }
 }
 function fpStep2Input() {
   const v = document.getElementById('fp-acc').value.trim();
   clearTimeout(stepTimer);
-  if (v) { document.getElementById('fp-note-acc').classList.add('show'); document.getElementById('fp-err-acc').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
- }
+  if (v) { 
+    document.getElementById('fp-note-acc').classList.add('show'); 
+    document.getElementById('fp-err-acc').classList.remove('show'); 
+    if (state.forgotStep === 2) stepTimer = setTimeout(() => activateForgotStep(3), 2000); 
+  }
 }
 function fpStep3Input() {
   const v = document.getElementById('fp-mobile').value.trim();
   clearTimeout(stepTimer);
-  if (v.length >= 6) { document.getElementById('fp-note-mobile').classList.add('show'); document.getElementById('fp-err-mobile').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
-}
+  if (v.length >= 6) { 
+    document.getElementById('fp-note-mobile').classList.add('show'); 
+    document.getElementById('fp-err-mobile').classList.remove('show'); 
+    if (state.forgotStep === 3) stepTimer = setTimeout(() => activateForgotStep(4), 2000); 
+  }
 }
 function fpStep3bInput() {
   const v = document.getElementById('fp-dob').value.trim();
   clearTimeout(stepTimer);
-  if (v.length >= 6) { document.getElementById('fp-note-dob').classList.add('show'); document.getElementById('fp-err-dob').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
- }
+  if (v.length >= 6) { 
+    document.getElementById('fp-note-dob').classList.add('show'); 
+    document.getElementById('fp-err-dob').classList.remove('show'); 
+    if (state.forgotStep === 4) stepTimer = setTimeout(() => activateForgotStep(5), 2000); 
+  }
 }
 function fpOtpInput() {
   const v = document.getElementById('fp-otp').value.trim();
@@ -2051,28 +2065,29 @@ function fpOtpInput() {
   clearTimeout(stepTimer);
   if (v === '123456') {
     document.getElementById('fp-note-otp').classList.add('show');
-    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+    if (state.forgotStep === 5) stepTimer = setTimeout(() => activateForgotStep(6), 2000);
   } else if (v.length === 6) {
     document.getElementById('fp-err-otp').classList.add('show');
   }
 }
 function fpNewPwInput() {
   const v = document.getElementById('fp-newpw').value;
-  clearTimeout(stepTimer); // Reset timer while typing
+  clearTimeout(stepTimer); 
   
-  const strongPwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+  const strongPwRegex = /^(?=.*)(?=.*\d)(?=.*).{8,}$/;
   const errEl = document.getElementById('fp-err-newpw');
   const noteEl = document.getElementById('fp-note-newpw');
 
   if (strongPwRegex.test(v)) { 
     noteEl.classList.add('show'); 
     errEl.classList.remove('show'); 
-    stepTimer = setTimeout(() => activateForgotStep(7), 2000); 
+    if (state.forgotStep === 6) stepTimer = setTimeout(() => activateForgotStep(7), 2000); 
   } else {
     noteEl.classList.remove('show');
     errEl.classList.add('show');
   }
 }
+
 function fpConfirmPwInput() {
   const p1 = document.getElementById('fp-newpw').value;
   const p2 = document.getElementById('fp-confirmpw').value;
@@ -2255,10 +2270,10 @@ function activateStmtStep(step) {
 }
 
 function onAccSelect() {
-    clearTimeout(stepTimer);
+  clearTimeout(stepTimer);
   document.getElementById('selected-acc-disp').textContent = '0000XXXXXXXX01';
   document.getElementById('stmt-note-acc').classList.add('show');
-  stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  if (state.stmtStep === 1) stepTimer = setTimeout(() => activateStmtStep(2), 2000);
 }
 
 function onPeriodChange(el) {
@@ -2270,14 +2285,14 @@ function onPeriodChange(el) {
   if (val === '6months') {
     document.getElementById('stmt-note-period').classList.add('show');
     document.getElementById('stmt-err-period').classList.remove('show');
-    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+    if (state.stmtStep === 2) stepTimer = setTimeout(() => activateStmtStep(3), 2000);
   }
 }
 
 function onDateInput() {
   // Check if period is filled
   clearTimeout(stepTimer);
-  const pType = document.querySelector('input[name="period-type"]:checked').value;
+  const pType = document.querySelector('input:checked').value;
   let valid = false;
   if (pType === 'bydate') {
     const f = document.getElementById('stmt-from').value.trim();
@@ -2293,15 +2308,15 @@ function onDateInput() {
   if (valid && state.stmtStep === 2) {
     document.getElementById('stmt-note-period').classList.add('show');
     document.getElementById('stmt-err-period').classList.remove('show');
-    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+    stepTimer = setTimeout(() => activateStmtStep(3), 2000);
   }
 }
 
 function onFormatChange() {
-    clearTimeout(stepTimer);
+  clearTimeout(stepTimer);
   if (state.stmtStep === 3) {
     document.getElementById('stmt-note-format').classList.add('show');
-    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+    stepTimer = setTimeout(() => activateStmtStep(4), 2000);
   }
 }
 
