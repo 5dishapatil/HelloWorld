@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deepfake Recognition Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<style>
+/* ============================================================
+   CSS CUSTOM PROPERTIES — edit these to restyle the whole app
+   ============================================================ */
+:root {
+  --bg:          #fdf8f2;
+  --surface:     #ffffff;
+  --surface-alt: #f5ede0;
+  --border:      #e4d5c2;
+
+  --ink:         #1a1208;
+  --ink-mid:     #5a4a35;
+  --ink-light:   #9e8a72;
+
+  --accent:      #2b6cb0;
+  --accent-dark: #1a4a80;
+  --accent-bg:   #ebf4ff;
+
+  --correct:     #2d6a4f;
+  --correct-bg:  #d8f3dc;
+  --wrong:       #c0392b;
+  --wrong-bg:    #fde8e4;
+
+  --gold:        #b7791f;
+  --gold-bg:     #fef3c7;
+
+  --radius:      14px;
+  --radius-lg:   22px;
+  --shadow:      0 4px 24px rgba(26,18,8,.10);
+  --shadow-lg:   0 12px 48px rgba(26,18,8,.18);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 19px;
+  line-height: 1.65;
+  color: var(--ink);
+  background: var(--bg);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   SCREEN MANAGEMENT
+   ============================================================ */
+.screen { display: none; }
+.screen.active { display: block; }
+/* Learn screen uses flex for sticky header + footer nav layout */
+#screen-learn { display: none; flex-direction: column; min-height: 100vh; }
+#screen-learn.active { display: flex; }
+/* Results screen uses flex to centre card */
+#screen-results { display: none; min-height: 100vh; align-items: center; justify-content: center; padding: 40px 24px; }
+#screen-results.active { display: flex; }
+
+/* ============================================================
+   SHARED LAYOUT HELPERS
+   ============================================================ */
+.container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+h1, h2, h3 { font-family: 'Lora', Georgia, serif; line-height: 1.25; }
+
+/* ============================================================
+   TOP NAV BAR (game screen)
+   ============================================================ */
+.top-bar {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.top-bar .brand { font-family: 'Lora', serif; font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -.3px; }
+.score-chip { display: flex; align-items: center; gap: 8px; background: var(--gold-bg); border: 2px solid var(--gold); border-radius: 50px; padding: 6px 18px; font-size: 20px; font-weight: 700; color: var(--gold); }
+.score-chip .label { font-size: 14px; font-weight: 600; color: var(--gold); letter-spacing: .05em; text-transform: uppercase; }
+
+/* ============================================================
+   PROGRESS BAR
+   ============================================================ */
+.progress-wrap { background: var(--surface); padding: 14px 24px 0; }
+.progress-text { font-size: 17px; font-weight: 600; color: var(--ink-mid); margin-bottom: 8px; }
+.progress-track { height: 10px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #4299e1); border-radius: 99px; transition: width .5s ease; }
+
+/* ============================================================
+   ─── SCREEN 1: LEARN — GUIDED SLIDESHOW ─────────────────
+   ============================================================ */
+
+/* ── Learn top header bar ── */
+.learn-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.learn-brand { font-family: 'Lora', serif; font-size: 22px; font-weight: 700; color: var(--accent); }
+
+/*
+ * STEP 2 ▶ Skip to Lab button
+ * Deliberately styled in gold/amber so it stands out from the blue primary buttons.
+ * Placed in top-right of the learn header — always visible without scrolling.
+ */
+.btn-skip {
+  background: var(--gold-bg);
+  color: var(--gold);
+  border: 2.5px solid var(--gold);
+  border-radius: 50px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 12px 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background .15s, transform .12s;
+  min-height: 52px;
+  white-space: nowrap;
+}
+.btn-skip:hover  { background: #fde68a; transform: translateY(-2px); }
+.btn-skip:active { transform: scale(.97); }
+
+/* ── Slide progress dots ── */
+.slide-dots { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 20px 24px 0; }
+.slide-dot {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 2px solid var(--border);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+  padding: 0;
+}
+.slide-dot.active { background: var(--accent); border-color: var(--accent); transform: scale(1.35); }
+.slide-dot:hover:not(.active) { background: var(--ink-light); }
+
+.slide-counter { text-align: center; font-size: 16px; font-weight: 600; color: var(--ink-light); letter-spacing: .07em; text-transform: uppercase; padding: 10px 0 0; }
+
+/* ── Slide stage (overflow container) ── */
+.slide-stage { flex: 1; position: relative; overflow: hidden; }
+
+/*
+ * Each technique slide is hidden by default.
+ * JS toggles .slide-visible to show the current one.
+ * The CSS transition handles the slide-in animation.
+ */
+.technique-slide {
+  display: none;
+  padding: 30px 0 40px;
+  overflow-y: auto;
+  max-height: calc(100vh - 220px); /* keeps content within viewport so nav stays visible */
+}
+.technique-slide.slide-visible { display: block; animation: slideInRight .35s ease; }
+.technique-slide.slide-from-left { animation: slideInLeft .35s ease; }
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(50px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-50px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.slide-inner { max-width: 900px; margin: 0 auto; padding: 0 28px; }
+
+.technique-title-row { display: flex; align-items: center; gap: 18px; margin-bottom: 14px; }
+.technique-emoji { font-size: 52px; flex-shrink: 0; line-height: 1; }
+.technique-title-row h2 { font-size: clamp(24px, 4vw, 34px); color: var(--ink); }
+
+.technique-desc { font-size: 19px; color: var(--ink-mid); line-height: 1.65; margin-bottom: 24px; max-width: 740px; }
+
+/* "What to look for" highlighted callout */
+.look-for-box {
+  background: var(--accent-bg);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 16px 22px;
+  margin-bottom: 28px;
+  font-size: 17px;
+  color: var(--accent-dark);
+  font-weight: 500;
+  line-height: 1.6;
+}
+.look-for-box strong { font-weight: 700; display: block; margin-bottom: 4px; }
+
+.example-label { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 14px; }
+
+/* 3-column grid of example images */
+.technique-images { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 10px; }
+@media (max-width: 600px) { .technique-images { grid-template-columns: 1fr; } }
+
+/* Individual example image tile */
+.example-img-wrap {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2.5px solid var(--border);
+  background: var(--surface-alt);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+}
+.example-img-wrap:hover,
+.example-img-wrap:focus-visible {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg), var(--shadow-lg);
+  transform: translateY(-3px);
+  outline: none;
+}
+.example-img-wrap img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+  transition: transform .3s ease;
+  pointer-events: none;
+}
+.example-img-wrap:hover img { transform: scale(1.06); }
+.example-expand-hint {
+  position: absolute;
+  bottom: 8px; right: 8px;
+  background: rgba(255,255,255,.92);
+  border: 1.5px solid var(--border);
+  border-radius: 50px;
+  padding: 3px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-mid);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.example-img-wrap:hover .example-expand-hint { opacity: 1; }
+
+/* ── Slide bottom navigation bar ── */
+.slide-nav {
+  background: var(--surface);
+  border-top: 2px solid var(--border);
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   ─── SCREEN 2: GAME ──────────────────────────────────────
+   ============================================================ */
+#screen-game { padding-bottom: 40px; }
+
+.question-label {
+  text-align: center;
+  padding: 28px 24px 18px;
+  font-family: 'Lora', serif;
+  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 600;
+  color: var(--ink);
+}
+.question-label span { color: var(--accent); }
+
+.image-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 0 24px; max-width: 860px; margin: 0 auto; }
+@media (max-width: 600px) { .image-pair { grid-template-columns: 1fr; } }
+
+.image-choice {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 3px solid var(--border);
+  cursor: pointer;
+  background: #e8e0d6;
+  box-shadow: var(--shadow);
+  transition: border-color .2s, box-shadow .2s, transform .15s;
+  -webkit-user-drag: none;
+}
+.image-choice:hover,
+.image-choice:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-bg), var(--shadow-lg); transform: translateY(-3px); outline: none; }
+.image-choice:active { transform: scale(.98); }
+.image-choice img { width: 100%; height: auto; max-height: 450px; object-fit: contain; display: block; transition: transform .35s ease; pointer-events: none; -webkit-user-drag: none; background: #e8ddd0; }
+.image-choice:hover img { transform: scale(1.08); }
+
+.choice-label { position: absolute; top: 12px; left: 12px; background: rgba(255,255,255,.92); border: 2px solid var(--border); border-radius: 50px; padding: 4px 14px; font-size: 15px; font-weight: 700; color: var(--ink-mid); letter-spacing: .05em; pointer-events: none; }
+
+.tap-hint { text-align: center; margin-top: 20px; font-size: 16px; color: var(--ink-light); padding: 0 24px; }
+
+/* ============================================================
+   ─── FEEDBACK MODAL ──────────────────────────────────────
+   ============================================================ */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,18,8,.55);
+  z-index: 200;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+  animation: fadeIn .2s ease;
+}
+.modal-backdrop.open { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 36px 36px 32px;
+  max-width: 560px;
+  width: 100%;
+  margin: auto;       /* vertical centering when content shorter than viewport */
+  animation: slideUp .3s ease;
+}
+@keyframes slideUp { from { transform: translateY(32px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+.modal-result-banner { display: flex; align-items: center; gap: 16px; padding: 18px 22px; border-radius: var(--radius); margin-bottom: 20px; }
+.modal-result-banner.correct { background: var(--correct-bg); border: 2px solid var(--correct); }
+.modal-result-banner.wrong   { background: var(--wrong-bg);   border: 2px solid var(--wrong); }
+.result-icon  { font-size: 36px; flex-shrink: 0; }
+.result-title { font-family: 'Lora', serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+.correct .result-title { color: var(--correct); }
+.wrong   .result-title { color: var(--wrong); }
+.result-desc { font-size: 17px; color: var(--ink-mid); line-height: 1.5; }
+
+/*
+ * STEP 3 ▶ Explanation image block in the feedback modal.
+ * Sits between the result banner and the social-proof stat.
+ * Clicking opens the lightbox for a full-screen view.
+ */
+.modal-explanation-wrap {
+  margin-bottom: 20px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 2px solid var(--border);
+  background: var(--surface-alt);
+  cursor: pointer;
+  transition: border-color .2s;
+}
+.modal-explanation-wrap:hover { border-color: var(--accent); }
+
+.modal-explanation-img {
+  width: 100%;
+  max-height: 250px;    /* as specified */
+  object-fit: contain;  /* full image visible, no cropping */
+  display: block;
+  background: var(--surface-alt);
+}
+
+.modal-explanation-label {
+  background: var(--surface-alt);
+  border-top: 1.5px solid var(--border);
+  padding: 8px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-light);
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.stat-box { background: var(--surface-alt); border: 2px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 28px; display: flex; align-items: flex-start; gap: 14px; }
+.stat-icon   { font-size: 28px; flex-shrink: 0; }
+.stat-number { font-family: 'Lora', serif; font-size: 32px; font-weight: 700; color: var(--accent); line-height: 1; }
+.stat-label  { font-size: 16px; color: var(--ink-mid); margin-top: 4px; }
+
+/* ============================================================
+   ─── SCREEN 3: RESULTS ───────────────────────────────────
+   ============================================================ */
+.results-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 52px 44px; max-width: 540px; width: 100%; text-align: center; }
+.trophy { font-size: 72px; margin-bottom: 20px; display: block; animation: bounce .6s ease; }
+@keyframes bounce { 0% { transform: scale(.5); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1); } }
+.results-card h2 { font-size: 36px; color: var(--ink); margin-bottom: 14px; }
+.score-display { font-family: 'Lora', serif; font-size: 64px; font-weight: 700; color: var(--accent); line-height: 1; margin: 20px 0; }
+.score-display span { font-size: 32px; color: var(--ink-mid); }
+.results-message { font-size: 19px; color: var(--ink-mid); line-height: 1.6; margin-bottom: 36px; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; font-family: 'Source Sans 3', sans-serif; font-size: 20px; font-weight: 700; border: none; border-radius: var(--radius); cursor: pointer; padding: 16px 36px; transition: background .15s, transform .12s, box-shadow .15s; text-decoration: none; line-height: 1; min-height: 58px; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(43,108,176,.35); }
+.btn-primary:hover { background: var(--accent-dark); box-shadow: 0 6px 22px rgba(43,108,176,.45); }
+.btn-secondary { background: var(--surface-alt); color: var(--ink-mid); border: 2px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-lg { font-size: 22px; padding: 20px 48px; min-height: 68px; border-radius: 50px; }
+.btn-full { width: 100%; }
+.btn-outline { background: transparent; color: var(--accent); border: 2.5px solid var(--accent); }
+.btn-outline:hover { background: var(--accent-bg); }
+
+/* ============================================================
+   PLACEHOLDER & LIGHTBOX
+   ============================================================ */
+.img-placeholder { width: 100%; aspect-ratio: 4/3; background: linear-gradient(135deg, #e8ddd0 0%, #d4c4b0 100%); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--ink-light); }
+
+.maximize-btn { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,.95); border: 2px solid var(--border); border-radius: 50px; padding: 6px 12px; font-size: 14px; font-weight: 700; color: var(--ink); cursor: pointer; z-index: 10; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,.1); transition: transform .2s; }
+.maximize-btn:hover { transform: scale(1.05); }
+
+.lightbox-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 400; align-items: center; justify-content: center; padding: 20px; }
+.lightbox-backdrop.open { display: flex; }
+.lightbox-content { position: relative; max-width: 95vw; max-height: 90vh; }
+.lightbox-img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: var(--radius); border: 4px solid var(--surface); }
+.lightbox-close { position: absolute; top: -20px; right: -20px; background: var(--wrong); color: #fff; border: none; width: 44px; height: 44px; border-radius: 50%; font-size: 24px; font-weight: bold; cursor: pointer; box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: center; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 480px) {
+  .modal-box    { padding: 28px 20px; }
+  .results-card { padding: 36px 22px; }
+  .image-pair   { gap: 14px; padding: 0 14px; }
+  .learn-header { padding: 12px 16px; }
+  .slide-nav    { padding: 14px 16px; gap: 10px; }
+  .slide-inner  { padding: 0 16px; }
+  .btn-skip     { font-size: 15px; padding: 10px 18px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     LIGHTBOX — shared by learn examples, game images, and modal
+     ============================================================ -->
+<div class="lightbox-backdrop" id="lightbox" onclick="closeLightbox()">
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close enlarged image">×</button>
+    <img src="" id="lightbox-img" class="lightbox-img" alt="Enlarged view" />
+  </div>
+</div>
+
+
+<!-- ============================================================
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SCREEN 1 — LEARN  (Step-by-step Guided Slideshow)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+     UPGRADE STEP 1: The old scrolling tip-card page is replaced
+     by this slideshow. Only one technique is shown at a time.
+
+     UPGRADE STEP 2: "Skip directly to Lab" button lives in the
+     sticky header at the top-right so it is always visible.
+
+     HTML STRUCTURE:
+       .learn-header  — sticky top bar with brand + skip button
+       .slide-dots    — clickable dot indicators (built by JS)
+       .slide-counter — "Technique X of 5" text label
+       .slide-stage   — five .technique-slide panels (JS shows one)
+       .slide-nav     — sticky bottom bar with Prev / Next / Start
+     ============================================================ -->
+<div id="screen-learn" class="screen active">
+
+  <!-- Sticky header -->
+  <div class="learn-header">
+    <span class="learn-brand">🔬 Deepfake Recognition Lab</span>
+
+    <!-- STEP 2 ▶ Skip button — amber/gold to stand out visually -->
+    <button class="btn-skip" onclick="startGame()"
+            aria-label="Skip the learning module and go directly to the quiz">
+      Skip directly to Lab ➡️
+    </button>
+  </div>
+
+  <!-- Dot navigation (populated by JS from TECHNIQUES array) -->
+  <div class="slide-dots" id="slide-dots" role="tablist" aria-label="Technique navigation dots"></div>
+  <div class="slide-counter" id="slide-counter">Technique 1 of 5</div>
+
+  <!-- Slide panels -->
+  <div class="slide-stage" id="slide-stage">
+
+    <!--
+    ════════════════════════════════════════════════════════════
+    LEARN MODULE HTML BLOCK — START
+    Five .technique-slide divs, one per technique.
+    All text and images are injected by buildLearnModule() in JS.
+    To add a technique: (1) add entry to TECHNIQUES[] in JS,
+    (2) copy a slide block below and increment data-slide / id.
+    ════════════════════════════════════════════════════════════
+    -->
+
+    <!-- Slide 0 -->
+    <div class="technique-slide slide-visible" data-slide="0" id="slide-0">
+      <div class="slide-inner">
+        <div class="technique-title-row">
+          <span class="technique-emoji" id="slide-0-emoji"></span>
+          <h2 id="slide-0-title"></h2>
+        </div>
+        <p class="technique-desc" id="slide-0-desc"></p>
+        <div class="look-for-box" id="slide-0-lookfor"></div>
+        <p class="example-label">📸 Real Examples — Click any image to enlarge</p>
+        <div class="technique-images" id="slide-0-images"></div>
+      </div>
+    </div>
+
+    <!-- Slide 1 -->
+    <div class="technique-slide" data-slide="1" id="slide-1">
+      <div class="slide-inner">
+        <div class="technique-title-row">
+          <span class="technique-emoji" id="slide-1-emoji"></span>
+          <h2 id="slide-1-title"></h2>
+        </div>
+        <p class="technique-desc" id="slide-1-desc"></p>
+        <div class="look-for-box" id="slide-1-lookfor"></div>
+        <p class="example-label">📸 Real Examples — Click any image to enlarge</p>
+        <div class="technique-images" id="slide-1-images"></div>
+      </div>
+    </div>
+
+    <!-- Slide 2 -->
+    <div class="technique-slide" data-slide="2" id="slide-2">
+      <div class="slide-inner">
+        <div class="technique-title-row">
+          <span class="technique-emoji" id="slide-2-emoji"></span>
+          <h2 id="slide-2-title"></h2>
+        </div>
+        <p class="technique-desc" id="slide-2-desc"></p>
+        <div class="look-for-box" id="slide-2-lookfor"></div>
+        <p class="example-label">📸 Real Examples — Click any image to enlarge</p>
+        <div class="technique-images" id="slide-2-images"></div>
+      </div>
+    </div>
+
+    <!-- Slide 3 -->
+    <div class="technique-slide" data-slide="3" id="slide-3">
+      <div class="slide-inner">
+        <div class="technique-title-row">
+          <span class="technique-emoji" id="slide-3-emoji"></span>
+          <h2 id="slide-3-title"></h2>
+        </div>
+        <p class="technique-desc" id="slide-3-desc"></p>
+        <div class="look-for-box" id="slide-3-lookfor"></div>
+        <p class="example-label">📸 Real Examples — Click any image to enlarge</p>
+        <div class="technique-images" id="slide-3-images"></div>
+      </div>
+    </div>
+
+    <!-- Slide 4 -->
+    <div class="technique-slide" data-slide="4" id="slide-4">
+      <div class="slide-inner">
+        <div class="technique-title-row">
+          <span class="technique-emoji" id="slide-4-emoji"></span>
+          <h2 id="slide-4-title"></h2>
+        </div>
+        <p class="technique-desc" id="slide-4-desc"></p>
+        <div class="look-for-box" id="slide-4-lookfor"></div>
+        <p class="example-label">📸 Real Examples — Click any image to enlarge</p>
+        <div class="technique-images" id="slide-4-images"></div>
+      </div>
+    </div>
+
+    <!--
+    ════════════════════════════════════════════════════════════
+    LEARN MODULE HTML BLOCK — END
+    ════════════════════════════════════════════════════════════
+    -->
+  </div><!-- /slide-stage -->
+
+  <!-- Sticky bottom navigation -->
+  <div class="slide-nav">
+    <button class="btn btn-secondary" id="btn-prev-slide"
+            onclick="changeSlide(-1)" aria-label="Previous technique" disabled>
+      ← Previous
+    </button>
+
+    <div style="display:flex;gap:12px;align-items:center;">
+      <!-- "Next Technique" shown on slides 0–3; hidden on slide 4 -->
+      <button class="btn btn-primary" id="btn-next-slide"
+              onclick="changeSlide(1)" aria-label="Next technique">
+        Next Technique →
+      </button>
+      <!-- "Start the Lab" shown only on the last slide -->
+      <button class="btn btn-primary btn-lg" id="btn-start-from-learn"
+              onclick="startGame()" style="display:none;"
+              aria-label="All techniques reviewed — start the quiz">
+        🔬 Start the Lab
+      </button>
+    </div>
+  </div>
+
+</div><!-- /screen-learn -->
+
+
+<!-- ============================================================
+     SCREEN 2 — GAME
+     ============================================================ -->
+<div id="screen-game" class="screen">
+
+  <div class="top-bar">
+    <span class="brand">🔬 Deepfake Lab</span>
+    <div class="score-chip">
+      <span class="label">Score</span>
+      <span id="score-value">0</span>
+    </div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-text" id="progress-text">Image 1 of 5</div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <p class="question-label">
+    Which image is <span>AI-generated (fake)?</span><br />
+    <small style="font-family:'Source Sans 3',sans-serif;font-size:16px;font-weight:400;color:var(--ink-light);">
+      Hover over an image to zoom in, then click the one you think is fake.
+    </small>
+  </p>
+
+  <div class="image-pair" id="image-pair"></div>
+
+  <p class="tap-hint">📱 On a phone? Long-press an image to zoom in.</p>
+
+</div><!-- /screen-game -->
+
+
+<!-- ============================================================
+     FEEDBACK MODAL
+     ============================================================ -->
+<div class="modal-backdrop" id="feedback-modal" role="dialog" aria-modal="true"
+     aria-labelledby="modal-title">
+  <div class="modal-box">
+
+    <!-- Result banner -->
+    <div class="modal-result-banner" id="modal-banner">
+      <span class="result-icon" id="modal-icon">✅</span>
+      <div>
+        <div class="result-title" id="modal-title">Well done!</div>
+        <div class="result-desc"  id="modal-desc">You spotted the AI-generated image.</div>
+      </div>
+    </div>
+
+    <!--
+      STEP 3 ▶ Explanation image
+      Path is set from currentPair.explanation in showFeedbackModal().
+      Clicking opens the shared lightbox at full size.
+      Hidden via JS if the file doesn't load (onerror handler).
+    -->
+    <div class="modal-explanation-wrap" id="modal-exp-wrap"
+         onclick="openLightbox(document.getElementById('modal-exp-img').src, event)"
+         role="button" tabindex="0" aria-label="Explanation image — click to enlarge">
+      <img id="modal-exp-img"
+           class="modal-explanation-img"
+           src="" alt="Where the fake artifact appears in this image" />
+      <div class="modal-explanation-label">🔍 Click to enlarge — see where the fake clue is</div>
+    </div>
+
+    <!-- Social proof stat -->
+    <div class="stat-box">
+      <span class="stat-icon">👥</span>
+      <div>
+        <div class="stat-number" id="stat-number">73%</div>
+        <div class="stat-label"  id="stat-label">of people found this pair difficult to judge.</div>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full" id="next-btn" onclick="nextRound()">
+      Next Image →
+    </button>
+
+  </div>
+</div><!-- /feedback-modal -->
+
+
+<!-- ============================================================
+     SCREEN 3 — RESULTS
+     ============================================================ -->
+<div id="screen-results" class="screen">
+  <div class="results-card">
+    <span class="trophy" id="trophy-emoji">🏆</span>
+    <h2 id="results-heading">Great effort!</h2>
+    <div class="score-display">
+      <span id="final-score">0</span>
+      <span> / 5</span>
+    </div>
+    <p class="results-message" id="results-message">
+      You're building real digital literacy skills. Keep practising!
+    </p>
+    <button class="btn btn-primary btn-lg btn-full" onclick="playAgain()">
+      🔄 Play Again
+    </button>
+    <br /><br />
+    <button class="btn btn-outline btn-full" onclick="showLearnScreen()">
+      📖 Review the Techniques
+    </button>
+  </div>
+</div><!-- /screen-results -->
+
+
+<!-- ============================================================
+     JAVASCRIPT
+     ============================================================ -->
+<script>
+
+/* ══════════════════════════════════════════════════════════════
+   LEARN MODULE — TECHNIQUE DATA
+   ══════════════════════════════════════════════════════════════
+   Each object in TECHNIQUES[] drives one slide in the learn module.
+
+   Properties:
+     emoji    — large icon shown beside the slide title
+     title    — heading text for the technique
+     desc     — 2–3 sentence explanatory paragraph
+     lookFor  — bulleted "what to spot" callout box text
+     images   — exactly 3 image paths; all support the lightbox
+
+   HOW TO EDIT:
+     • Change any string value below to update text or images.
+     • To add a 6th technique: append an object here AND add a
+       matching .technique-slide shell in the HTML above.
+   ══════════════════════════════════════════════════════════════ */
+const TECHNIQUES = [
+  {
+    emoji:   '🖐️',
+    title:   'Unusual Hands & Fingers',
+    desc:    'AI image generators have long struggled to render hands correctly. The geometry of fingers — five per hand, each with three joints, always bending in anatomically possible directions — is surprisingly complex for a neural network to learn consistently.',
+    lookFor: '<strong>👀 What to look for:</strong> Six or more fingers on one hand · Fused or melted-together digits · Fingers that are too long, too short, or bend the wrong way · Extra "ghost" fingers visible at the edge of the frame.',
+    images:  ['assets/01_i.png', 'assets/02_i.png', 'assets/03_i.png'],
+  },
+  {
+    emoji:   '💡',
+    title:   'Mismatched Lighting & Shadows',
+    desc:    'In a real photograph, every shadow and highlight follows a single, consistent light source — the sun, a window, a lamp. AI images often stitch together elements with subtly different lighting, so a face might be lit from the left while the background is lit from the right.',
+    lookFor: '<strong>👀 What to look for:</strong> Shadows pointing in different directions · Unnaturally bright or glowing skin · The subject looking "pasted in" against the background · Reflections in eyes that do not match the scene lighting.',
+    images:  ['assets/04_i.png', 'assets/05_i.png', 'assets/06_i.png'],
+  },
+  {
+    emoji:   '🔤',
+    title:   'Blurry or Garbled Text',
+    desc:    'Text is one of the most reliable deepfake tells. AI generators cannot read or write — they predict visually plausible patterns. Any text visible in the scene — on a sign, a t-shirt, a book cover — will be a meaningless jumble of letter-like shapes.',
+    lookFor: '<strong>👀 What to look for:</strong> Background signs with nonsense letters · Brand logos that are almost-but-not-quite correct · Clothing with text that blurs into scribbles · Clock faces with impossible or scrambled numbers.',
+    images:  ['assets/07_i.png', 'assets/08_i.png', 'assets/09_i.png'],
+  },
+  {
+    emoji:   '👁️',
+    title:   'Asymmetrical Features',
+    desc:    'Human faces are roughly symmetrical — our eyes, ears, and eyebrows broadly mirror each other. AI generation introduces subtle but detectable asymmetries: one eye higher, a drooping pupil, earrings that do not match, or eyebrows of different thickness.',
+    lookFor: '<strong>👀 What to look for:</strong> One eye noticeably higher or lower than the other · Pupils of different sizes or angles · Earrings that are different shapes · Eyebrows with different thicknesses · A hairline that shifts unevenly.',
+    images:  ['assets/10_i.png', 'assets/11_i.png', 'assets/12_i.png'],
+  },
+  {
+    emoji:   '✨',
+    title:   'Overly Polished Skin & Textures',
+    desc:    'Real human skin has pores, fine hairs, tiny blemishes, and subtle colour variation. AI tends to over-smooth, producing a "plastic doll" quality — particularly on the face and neck. Fabric weave, hair strands, and surfaces can also appear unnaturally uniform or repetitive.',
+    lookFor: '<strong>👀 What to look for:</strong> Skin that looks airbrushed or waxy with no pores · Hair that clumps into perfectly identical strands · Fabric with a strange repeating texture · No visible freckles, blemishes, or normal skin detail · Background surfaces that tile or repeat.',
+    images:  ['assets/13_i.png', 'assets/14_i.png', 'assets/15_i.png'],
+  },
+];
+
+/* Current visible slide index */
+let currentSlide = 0;
+
+/* ──────────────────────────────────────────────────────────────
+   BUILD LEARN MODULE
+   Called once on page load. Injects text + images into each
+   slide shell and creates the dot navigation buttons.
+   ────────────────────────────────────────────────────────────── */
+function buildLearnModule() {
+  const dotsEl = document.getElementById('slide-dots');
+  dotsEl.innerHTML = '';
+
+  TECHNIQUES.forEach((tech, i) => {
+    // Inject text content
+    document.getElementById(`slide-${i}-emoji`).textContent  = tech.emoji;
+    document.getElementById(`slide-${i}-title`).textContent  = tech.title;
+    document.getElementById(`slide-${i}-desc`).textContent   = tech.desc;
+    document.getElementById(`slide-${i}-lookfor`).innerHTML  = tech.lookFor;
+
+    // Build the 3 example image tiles
+    document.getElementById(`slide-${i}-images`).innerHTML = tech.images.map((src, j) => `
+      <div class="example-img-wrap"
+           onclick="openLightbox('${src}', event)"
+           role="button" tabindex="0"
+           aria-label="Example ${j + 1}: ${tech.title} — click to enlarge"
+           onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openLightbox('${src}',event);}">
+        <img src="${src}" alt="Example ${j + 1} for ${tech.title}" loading="lazy"
+             onerror="this.parentNode.innerHTML='<div class=img-placeholder>Example ${j + 1}</div>'" />
+        <span class="example-expand-hint">🔍 Enlarge</span>
+      </div>
+    `).join('');
+
+    // Create navigation dot
+    const dot = document.createElement('button');
+    dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('role', 'tab');
+    dot.setAttribute('aria-label', `Go to technique ${i + 1}: ${tech.title}`);
+    dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+    dot.onclick = () => goToSlide(i);
+    dotsEl.appendChild(dot);
+  });
+
+  updateLearnNav();
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SLIDE NAVIGATION
+   ────────────────────────────────────────────────────────────── */
+function changeSlide(direction) {
+  const next = currentSlide + direction;
+  if (next < 0 || next >= TECHNIQUES.length) return;
+  goToSlide(next, direction);
+}
+
+function goToSlide(targetIndex, direction) {
+  if (targetIndex === currentSlide) return;
+
+  const dir = direction !== undefined ? direction : (targetIndex > currentSlide ? 1 : -1);
+
+  // Hide current slide
+  const current = document.getElementById(`slide-${currentSlide}`);
+  current.classList.remove('slide-visible', 'slide-from-left');
+
+  // Show new slide with appropriate entry animation
+  const target = document.getElementById(`slide-${targetIndex}`);
+  target.classList.remove('slide-visible', 'slide-from-left');
+
+  if (dir < 0) target.classList.add('slide-from-left');
+  // Force reflow so animation restarts cleanly
+  void target.offsetWidth;
+  target.classList.add('slide-visible');
+
+  currentSlide = targetIndex;
+  updateLearnNav();
+}
+
+function updateLearnNav() {
+  const total  = TECHNIQUES.length;
+  const isLast = currentSlide === total - 1;
+
+  document.getElementById('slide-counter').textContent = `Technique ${currentSlide + 1} of ${total}`;
+
+  // Update dots
+  document.querySelectorAll('.slide-dot').forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentSlide);
+    dot.setAttribute('aria-selected', i === currentSlide ? 'true' : 'false');
+  });
+
+  // Prev button — disabled on first slide
+  document.getElementById('btn-prev-slide').disabled = (currentSlide === 0);
+
+  // Toggle Next / Start buttons
+  document.getElementById('btn-next-slide').style.display       = isLast ? 'none'        : '';
+  document.getElementById('btn-start-from-learn').style.display = isLast ? 'inline-flex' : 'none';
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SHOW LEARN SCREEN (called from Results "Review" button)
+   Resets to slide 0 each visit.
+   ────────────────────────────────────────────────────────────── */
+function showLearnScreen() {
+  // Reset all slides
+  TECHNIQUES.forEach((_, i) => {
+    const el = document.getElementById(`slide-${i}`);
+    el.classList.remove('slide-visible', 'slide-from-left');
+  });
+  currentSlide = 0;
+  document.getElementById('slide-0').classList.add('slide-visible');
+  updateLearnNav();
+  showScreen('screen-learn');
+  window.scrollTo({ top: 0 });
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   QUIZ DATA — ALL_PAIRS ARRAY
+   ══════════════════════════════════════════════════════════════
+   STEP 3: Each pair now includes an `explanation` property.
+   This image is shown in the feedback modal after each answer
+   to highlight exactly where the deepfake artifact appears.
+
+   File naming convention used by this template:
+     Real image       →  assets/{id}.png
+     Fake image       →  assets/{id}_d.png
+     Explanation img  →  assets/{id}_exp.png   ← NEW for Step 3
+
+   HOW TO CUSTOMISE:
+     • To change the extension: edit the three template literals.
+     • To add pairs: increase the Array.from length (currently 18)
+       — files must exist in the assets folder.
+     • To override individual pairs with different paths, replace
+       Array.from with a hand-written array of objects.
+   ══════════════════════════════════════════════════════════════ */
+const ALL_PAIRS = Array.from({ length: 18 }, (_, i) => {
+  const id = String(i + 1).padStart(2, '0'); // "01" … "18"
+  return {
+    id,
+    real:        `assets/${id}.png`,
+    fake:        `assets/${id}_d.png`,
+    explanation: `assets/${id}_exp.png`,   // ← annotated image shown in modal
+  };
+});
+
+
+/* ──────────────────────────────────────────────────────────────
+   GAME STATE
+   ────────────────────────────────────────────────────────────── */
+let sessionPairs = [];   // 5 randomly selected pairs for this session
+let currentRound = 0;
+let score        = 0;
+let fakeIsOnLeft = false;
+
+const TOTAL_ROUNDS = 5;  // ← change to play more/fewer rounds
+
+/* ──────────────────────────────────────────────────────────────
+   UTILITY: Fisher-Yates shuffle (non-destructive)
+   ────────────────────────────────────────────────────────────── */
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   UTILITY: Show / hide screens
+   ────────────────────────────────────────────────────────────── */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   START GAME
+   ────────────────────────────────────────────────────────────── */
+function startGame() {
+  sessionPairs = shuffle(ALL_PAIRS).slice(0, TOTAL_ROUNDS);
+  currentRound = 0;
+  score        = 0;
+  updateScoreDisplay();
+  showScreen('screen-game');
+  renderRound();
+}
+
+function playAgain() { startGame(); }
+
+/* ──────────────────────────────────────────────────────────────
+   RENDER CURRENT ROUND
+   ────────────────────────────────────────────────────────────── */
+function renderRound() {
+  const pair = sessionPairs[currentRound];
+
+  document.getElementById('progress-text').textContent =
+    `Image ${currentRound + 1} of ${TOTAL_ROUNDS}`;
+  document.getElementById('progress-fill').style.width =
+    `${(currentRound / TOTAL_ROUNDS) * 100}%`;
+
+  fakeIsOnLeft = Math.random() < 0.5;
+  const leftSrc  = fakeIsOnLeft ? pair.fake : pair.real;
+  const rightSrc = fakeIsOnLeft ? pair.real : pair.fake;
+
+  document.getElementById('image-pair').innerHTML = `
+    <div style="position:relative;">
+      <button class="maximize-btn"
+              onclick="openLightbox('${leftSrc}', event)"
+              aria-label="Expand Image A to full screen">🔍 Expand</button>
+      <button class="image-choice" onclick="handleChoice(true)" style="width:100%;"
+              aria-label="Image A — click if you think this is the AI-generated fake">
+        <img src="${leftSrc}" alt="Image option A" loading="lazy"
+             onerror="this.parentNode.innerHTML='<div class=img-placeholder>Image A</div>'" />
+        <span class="choice-label">A</span>
+      </button>
+    </div>
+    <div style="position:relative;">
+      <button class="maximize-btn"
+              onclick="openLightbox('${rightSrc}', event)"
+              aria-label="Expand Image B to full screen">🔍 Expand</button>
+      <button class="image-choice" onclick="handleChoice(false)" style="width:100%;"
+              aria-label="Image B — click if you think this is the AI-generated fake">
+        <img src="${rightSrc}" alt="Image option B" loading="lazy"
+             onerror="this.parentNode.innerHTML='<div class=img-placeholder>Image B</div>'" />
+        <span class="choice-label">B</span>
+      </button>
+    </div>
+  `;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   HANDLE IMAGE CHOICE
+   userClickedLeft = true  → user clicked Image A (left column)
+   userClickedLeft = false → user clicked Image B (right column)
+   ────────────────────────────────────────────────────────────── */
+function handleChoice(userClickedLeft) {
+  const isCorrect = (userClickedLeft === fakeIsOnLeft);
+  if (isCorrect) score++;
+  updateScoreDisplay();
+  showFeedbackModal(isCorrect);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   FEEDBACK MODAL
+   STEP 3: Reads currentPair.explanation to populate the
+   annotated explanation image shown between the result banner
+   and the social-proof stat box.
+   ────────────────────────────────────────────────────────────── */
+function showFeedbackModal(isCorrect) {
+  const banner  = document.getElementById('modal-banner');
+  const icon    = document.getElementById('modal-icon');
+  const title   = document.getElementById('modal-title');
+  const desc    = document.getElementById('modal-desc');
+  const statNum = document.getElementById('stat-number');
+  const statLbl = document.getElementById('stat-label');
+
+  // ── Result banner styling ──
+  banner.className = 'modal-result-banner ' + (isCorrect ? 'correct' : 'wrong');
+
+  if (isCorrect) {
+    icon.textContent  = '✅';
+    title.textContent = 'Excellent!';
+    desc.textContent  = 'You spotted the AI-generated image. Your eye for detail is sharp!';
+  } else {
+    icon.textContent  = '💛';
+    title.textContent = 'Not quite!';
+    desc.textContent  = 'That was a tricky one. Each miss is a step closer to becoming an expert!';
+  }
+
+  // ── STEP 3 ▶ Set explanation image from current pair's .explanation path ──
+  const currentPair = sessionPairs[currentRound];
+  const expImg  = document.getElementById('modal-exp-img');
+  const expWrap = document.getElementById('modal-exp-wrap');
+
+  // Reset visibility and load the explanation image
+  expWrap.style.display = '';
+  expImg.src = currentPair.explanation;
+  expImg.alt = `Explanation for pair ${currentPair.id}: highlighted deepfake artifact`;
+
+  // If the explanation file doesn't exist yet, hide the block cleanly
+  expImg.onerror = () => { expWrap.style.display = 'none'; };
+  expImg.onload  = () => { expWrap.style.display = '';     };
+
+  // ── Social-proof statistic ──
+  // To change the percentage range, edit the two numbers (60 and 95):
+  const statValue = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
+  statNum.textContent = statValue + '%';
+
+  const statMessages = [
+    'of people found this pair difficult to judge.',
+    'of visitors needed more than one look at this pair.',
+    'of players got this one wrong on their first try.',
+    'of people struggled to tell these two apart.',
+  ];
+  statLbl.textContent = statMessages[Math.floor(Math.random() * statMessages.length)];
+
+  // Open modal and move keyboard focus to the Next button
+  document.getElementById('feedback-modal').classList.add('open');
+  setTimeout(() => document.getElementById('next-btn').focus(), 120);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NEXT ROUND
+   ────────────────────────────────────────────────────────────── */
+function nextRound() {
+  document.getElementById('feedback-modal').classList.remove('open');
+  currentRound++;
+  if (currentRound >= TOTAL_ROUNDS) {
+    showResults();
+  } else {
+    renderRound();
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   RESULTS SCREEN
+   ────────────────────────────────────────────────────────────── */
+function showResults() {
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('final-score').textContent = score;
+
+  let emoji, heading, message;
+  if (score === TOTAL_ROUNDS) {
+    emoji = '🏆'; heading = 'Perfect Score!';
+    message = 'Outstanding! You identified every single fake. You have a truly sharp eye — share this lab with friends and family to help keep them safe online.';
+  } else if (score >= 4) {
+    emoji = '🥇'; heading = 'Brilliant Work!';
+    message = "You got almost all of them! Just one slipped past you — that's impressive for a first session. Your digital literacy skills are growing fast.";
+  } else if (score >= 3) {
+    emoji = '👏'; heading = 'Well Done!';
+    message = "A solid result! You're developing a real instinct for spotting AI-generated images. Play again and see if you can beat your score.";
+  } else if (score >= 2) {
+    emoji = '💪'; heading = 'Good Start!';
+    message = "Deepfakes are genuinely tricky — even experts get fooled. Review the techniques and try again. You'll improve quickly.";
+  } else {
+    emoji = '🌱'; heading = 'Keep Practising!';
+    message = "These images were tough, and you're just getting started. Every attempt trains your brain. Review the techniques and give it another go!";
+  }
+
+  document.getElementById('trophy-emoji').textContent    = emoji;
+  document.getElementById('results-heading').textContent = heading;
+  document.getElementById('results-message').textContent = message;
+  showScreen('screen-results');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   UPDATE SCORE DISPLAY
+   ────────────────────────────────────────────────────────────── */
+function updateScoreDisplay() {
+  document.getElementById('score-value').textContent = score;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LIGHTBOX
+   ────────────────────────────────────────────────────────────── */
+function openLightbox(imgSrc, event) {
+  if (event) event.stopPropagation();
+  document.getElementById('lightbox-img').src = imgSrc;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+/* ──────────────────────────────────────────────────────────────
+   KEYBOARD EVENTS
+   ────────────────────────────────────────────────────────────── */
+document.addEventListener('keydown', function(e) {
+  // Escape: close lightbox first; then feedback modal
+  if (e.key === 'Escape') {
+    if (document.getElementById('lightbox').classList.contains('open')) {
+      closeLightbox(); return;
+    }
+    if (document.getElementById('feedback-modal').classList.contains('open')) {
+      nextRound(); return;
+    }
+  }
+  // Arrow keys navigate slides when on the learn screen
+  if (document.getElementById('screen-learn').classList.contains('active')) {
+    if (e.key === 'ArrowRight') changeSlide(1);
+    if (e.key === 'ArrowLeft')  changeSlide(-1);
+  }
+});
+
+/* Click backdrop to close feedback modal */
+document.getElementById('feedback-modal').addEventListener('click', function(e) {
+  if (e.target === this) nextRound();
+});
+
+/* ──────────────────────────────────────────────────────────────
+   INIT — build the learn module when the DOM is ready
+   ────────────────────────────────────────────────────────────── */
+buildLearnModule();
+
+</script>
+</body>
+</html>

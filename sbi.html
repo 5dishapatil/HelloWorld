@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SBI Online Banking – Training Simulation</title>
+<style>
+/* =====================================================================
+   SBI TRAINING SIMULATION – STYLESHEET
+   ===================================================================== */
+
+/* ── Google Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap');
+
+/* ── CSS Variables ── */
+:root {
+  --sbi-blue:       #1a5276;
+  --sbi-blue-mid:   #2471a3;
+  --sbi-blue-light: #aed6f1;
+  --sbi-blue-bg:    #eaf4fb;
+  --sbi-cyan:       #1aabc7;
+  --sbi-orange:     #b7600a;
+  --sbi-orange-btn: #c0720d;
+  --sbi-orange-hover:#a05e08;
+  --sbi-green:      #1e8449;
+  --sbi-red:        #c0392b;
+  --sbi-grey:       #6c757d;
+  --sbi-border:     #b8d4e8;
+  --sbi-white:      #ffffff;
+  --sbi-bg:         #f5f8fc;
+  --warn-bg:        #fdf3e7;
+  --warn-border:    #e59866;
+  --warn-text:      #784212;
+  --step-glow:      0 0 0 3px #1aabc7, 0 0 18px rgba(26,171,199,0.35);
+  --card-shadow:    0 2px 10px rgba(26,82,118,0.10);
+  --font-main:      'Noto Sans', 'Noto Sans Devanagari', Arial, sans-serif;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-main);
+  font-size: 17px;
+  background: var(--sbi-bg);
+  color: #1a252f;
+  min-height: 100vh;
+}
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+.visually-hidden { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); }
+
+/* =====================================================================
+   GLOBAL WARNING BANNER
+   ===================================================================== */
+#global-warning {
+  background: #fff3cd;
+  border-bottom: 3px solid #f0a500;
+  padding: 10px 20px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #7d4e00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  line-height: 1.4;
+}
+#global-warning .warn-icon { font-size: 20px; flex-shrink:0; }
+
+/* =====================================================================
+   SBI HEADER
+   ===================================================================== */
+#sbi-header {
+  background: var(--sbi-white);
+  border-bottom: 4px solid var(--sbi-blue);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+.sbi-logo-area { display: flex; align-items: center; gap: 4px; }
+.sbi-logo-circle {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a5276, #1aabc7);
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 900; font-size: 13px;
+  letter-spacing: -0.5px; flex-shrink:0;
+}
+.sbi-logo-text { line-height: 1.1; }
+.sbi-logo-text .sbi-name {
+  font-size: 22px; font-weight: 900;
+  color: var(--sbi-blue);
+  letter-spacing: 1px;
+}
+.sbi-logo-text .sbi-sub {
+  font-size: 11px; font-weight: 600;
+  color: var(--sbi-cyan);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.sbi-header-right { display: flex; align-items: center; gap: 12px; }
+#logout-btn {
+  background: var(--sbi-red);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: none;
+  letter-spacing: 0.5px;
+}
+#logout-btn:hover { background: #a93226; }
+#hamburger-btn {
+  background: var(--sbi-blue-mid);
+  border: none;
+  border-radius: 4px;
+  width: 40px; height: 36px;
+  cursor: pointer;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.2s;
+  position: relative;
+}
+#hamburger-btn.step-active {
+  box-shadow: var(--step-glow);
+  animation: pulse-glow 1.5s infinite;
+}
+#hamburger-btn .bar {
+  width: 22px; height: 3px;
+  background: white;
+  border-radius: 2px;
+  display: block;
+}
+.training-badge {
+  background: var(--sbi-orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* =====================================================================
+   TOP NAV BAR (visible after login, desktop)
+   ===================================================================== */
+#top-nav {
+  background: var(--sbi-blue-mid);
+  display: none;
+  flex-wrap: wrap;
+  gap: 0;
+}
+#top-nav a {
+  color: white;
+  text-decoration: none;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  border-right: 1px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#top-nav a:hover { background: var(--sbi-blue); }
+
+/* =====================================================================
+   SLIDE-OUT SIDEBAR MENU
+   ===================================================================== */
+#sidebar-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
+  display: none;
+}
+#sidebar {
+  position: fixed;
+  top: 0; left: -300px;
+  width: 280px;
+  height: 100%;
+  background: var(--sbi-blue);
+  z-index: 999;
+  transition: left 0.3s ease;
+  overflow-y: auto;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+}
+#sidebar.open { left: 0; }
+.sidebar-header {
+  background: var(--sbi-blue-mid);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--sbi-cyan);
+}
+.sidebar-header span { color: white; font-weight: 700; font-size: 16px; }
+#close-sidebar {
+  background: none; border: none;
+  color: white; font-size: 26px;
+  cursor: pointer; line-height: 1;
+}
+.sidebar-menu { list-style: none; padding: 10px 0; }
+.sidebar-menu li a {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 22px;
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.sidebar-menu li a:hover,
+.sidebar-menu li a.step-active {
+  background: var(--sbi-blue-mid);
+  color: white;
+}
+.sidebar-menu li a.step-active {
+  box-shadow: inset 4px 0 0 var(--sbi-cyan);
+  font-weight: 700;
+  animation: pulse-glow 1.5s infinite;
+}
+.sidebar-menu .menu-icon { font-size: 20px; width: 26px; text-align: center; }
+
+/* =====================================================================
+   BREADCRUMB
+   ===================================================================== */
+#breadcrumb {
+  background: var(--sbi-blue);
+  color: white;
+  padding: 10px 20px;
+  font-size: 13px;
+  display: none;
+}
+#breadcrumb span { opacity: 0.75; }
+#breadcrumb strong { opacity: 1; }
+
+/* =====================================================================
+   MAIN CONTENT WRAPPER
+   ===================================================================== */
+#main-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+/* =====================================================================
+   SCREEN PANELS
+   ===================================================================== */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* =====================================================================
+   DISCLAIMER SCREEN
+   ===================================================================== */
+#screen-disclaimer {
+  max-width: 720px;
+  margin: 30px auto;
+}
+.disclaimer-box {
+  background: white;
+  border: 3px solid var(--sbi-orange);
+  border-radius: 10px;
+  padding: 36px 40px;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+}
+.disclaimer-box .disc-icon { font-size: 56px; margin-bottom: 12px; }
+.disclaimer-box h1 {
+  font-size: 26px; font-weight: 800;
+  color: var(--sbi-red);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+.disclaimer-box .disc-main {
+  font-size: 18px;
+  color: var(--warn-text);
+  background: var(--warn-bg);
+  border: 2px solid var(--warn-border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.disclaimer-box .disc-sub {
+  font-size: 15px;
+  color: #555;
+  margin-bottom: 24px;
+  line-height: 1.7;
+}
+.disc-checklist {
+  text-align: left;
+  background: #f0f7ff;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 28px;
+}
+.disc-checklist li {
+  list-style: none;
+  padding: 5px 0;
+  font-size: 15px;
+  color: #1a5276;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.disc-checklist li::before { content: "✅"; flex-shrink: 0; }
+.btn-primary {
+  background: var(--sbi-orange-btn);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 14px 40px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 3px 10px rgba(176,90,10,0.3);
+}
+.btn-primary:hover { background: var(--sbi-orange-hover); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0); }
+.btn-secondary {
+  background: var(--sbi-blue-mid);
+  color: white; border: none;
+  border-radius: 6px;
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover { background: var(--sbi-blue); }
+.btn-outline {
+  background: white;
+  color: var(--sbi-blue);
+  border: 2px solid var(--sbi-blue);
+  border-radius: 6px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-outline:hover { background: var(--sbi-blue); color: white; }
+
+/* =====================================================================
+   PROGRESS INDICATOR
+   ===================================================================== */
+.progress-bar-outer {
+  background: #d5e8f5;
+  border-radius: 8px;
+  height: 10px;
+  margin-bottom: 6px;
+  overflow: hidden;
+}
+.progress-bar-inner {
+  background: linear-gradient(90deg, var(--sbi-cyan), var(--sbi-blue));
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.4s ease;
+}
+.progress-label {
+  font-size: 13px;
+  color: var(--sbi-blue);
+  font-weight: 600;
+  text-align: right;
+  margin-bottom: 16px;
+}
+
+/* =====================================================================
+   INSTRUCTION CARD
+   ===================================================================== */
+.instruction-card {
+  background: linear-gradient(135deg, #e8f4fd, #d6edf9);
+  border: 2px solid var(--sbi-cyan);
+  border-radius: 10px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.instruction-card .ic-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 8px;
+}
+.instruction-card .ic-step-badge {
+  background: var(--sbi-cyan);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.instruction-card .ic-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sbi-blue);
+}
+.instruction-card .ic-body {
+  font-size: 16px;
+  color: #1a3a4a;
+  line-height: 1.65;
+}
+.instruction-card .ic-note {
+  font-size: 14px;
+  color: var(--sbi-green);
+  font-weight: 600;
+  margin-top: 8px;
+  display: flex; gap: 6px; align-items: flex-start;
+}
+.ic-actions {
+  display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+}
+.btn-speak {
+  background: white;
+  border: 1.5px solid var(--sbi-blue);
+  color: var(--sbi-blue);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  transition: all 0.2s;
+}
+.btn-speak:hover { background: var(--sbi-blue); color: white; }
+
+/* =====================================================================
+   FORM CARD / LOGIN AREA
+   ===================================================================== */
+.form-card {
+  background: white;
+  border-radius: 10px;
+  padding: 28px 30px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid #d5e5f5;
+  margin-bottom: 20px;
+}
+.form-card h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--sbi-blue);
+  margin-bottom: 6px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--sbi-blue-light);
+}
+.form-card .card-subtitle {
+  font-size: 13px;
+  color: var(--sbi-red);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 6px;
+}
+.form-group label .req { color: var(--sbi-red); margin-left: 2px; }
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 16px;
+  border: 2px solid #c5d9ea;
+  border-radius: 6px;
+  background: white;
+  color: #1a252f;
+  font-family: var(--font-main);
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--sbi-cyan);
+  box-shadow: 0 0 0 3px rgba(26,171,199,0.2);
+}
+.form-group input:disabled,
+.form-group select:disabled {
+  background: #f0f4f8;
+  color: #9aa5b4;
+  cursor: not-allowed;
+  border-color: #dde4ec;
+}
+.form-group input.step-active,
+.form-group select.step-active {
+  border-color: var(--sbi-cyan);
+  box-shadow: var(--step-glow);
+  animation: pulse-glow 1.5s infinite;
+}
+.pw-wrap { position: relative; }
+.pw-wrap input { padding-right: 50px; }
+.pw-toggle {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; font-size: 18px; color: var(--sbi-grey);
+  padding: 4px;
+}
+.success-note {
+  display: none;
+  background: #eafaf1;
+  border: 1.5px solid var(--sbi-green);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sbi-green);
+  margin-top: 8px;
+  align-items: center; gap: 6px;
+}
+.success-note.show { display: flex; }
+.error-note {
+  display: none;
+  background: #fdedec;
+  border: 1.5px solid var(--sbi-red);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sbi-red);
+  margin-top: 8px;
+}
+.error-note.show { display: block; }
+
+/* ── CAPTCHA area ── */
+.captcha-area {
+  display: flex; gap: 12px; align-items: center;
+  flex-wrap: wrap;
+}
+.captcha-img {
+  background: #f0f0ee;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 14px;
+  font-size: 22px;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 4px;
+  color: #1a5276;
+  text-decoration: line-through wavy #c0392b;
+  user-select: none;
+  min-width: 130px;
+  text-align: center;
+  transform: skewX(-4deg);
+  background-image: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(200,200,200,0.15) 3px, rgba(200,200,200,0.15) 6px);
+}
+.btn-refresh {
+  background: none; border: none;
+  font-size: 22px; cursor: pointer;
+  color: var(--sbi-blue);
+  padding: 4px;
+  transition: transform 0.3s;
+}
+.btn-refresh:hover { transform: rotate(180deg); }
+
+/* ─── Form action row ─── */
+.form-actions {
+  display: flex; gap: 14px; align-items: center;
+  flex-wrap: wrap; margin-top: 8px;
+}
+.btn-login {
+  background: var(--sbi-blue);
+  color: white; border: none;
+  border-radius: 4px;
+  padding: 11px 32px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-login:disabled {
+  background: #aab7c4;
+  cursor: not-allowed;
+}
+.btn-login:not(:disabled):hover { background: #154360; }
+.btn-login.step-active:not(:disabled) {
+  box-shadow: var(--step-glow);
+  animation: pulse-glow 1.5s infinite;
+}
+.btn-reset-grey {
+  background: #7f8c8d;
+  color: white; border: none;
+  border-radius: 4px;
+  padding: 11px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-reset-grey:hover { background: #636e72; }
+.forgot-link {
+  color: var(--sbi-blue-mid);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  background: none; border: none;
+  padding: 0;
+}
+.forgot-link:hover { color: var(--sbi-orange); }
+
+/* Decision step */
+.decision-card {
+  background: #f0f7ff;
+  border: 2px solid var(--sbi-blue-light);
+  border-radius: 10px;
+  padding: 22px 24px;
+  margin-top: 16px;
+}
+.decision-card h3 { font-size: 17px; color: var(--sbi-blue); margin-bottom: 16px; }
+.decision-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
+.btn-decision {
+  flex: 1; min-width: 180px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 2.5px solid transparent;
+  transition: all 0.2s;
+  text-align: center;
+}
+.btn-decision.yes {
+  background: #fef9f0;
+  border-color: var(--sbi-orange);
+  color: var(--sbi-orange);
+}
+.btn-decision.yes:hover { background: var(--sbi-orange); color: white; }
+.btn-decision.no {
+  background: var(--sbi-blue);
+  color: white;
+  border-color: var(--sbi-blue);
+}
+.btn-decision.no:hover { background: var(--sbi-blue-mid); }
+
+/* OTP hint */
+.otp-hint {
+  background: #fff3cd;
+  border: 1.5px solid #ffc107;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 15px;
+  color: #7d4e00;
+  font-weight: 700;
+  margin-bottom: 10px;
+  display: flex; gap: 8px; align-items: center;
+}
+
+/* =====================================================================
+   SUCCESS / COMPLETION SCREENS
+   ===================================================================== */
+.success-screen {
+  text-align: center;
+  background: white;
+  border-radius: 12px;
+  padding: 40px 30px;
+  box-shadow: var(--card-shadow);
+  max-width: 560px;
+  margin: 0 auto;
+}
+.success-screen .ss-icon { font-size: 64px; margin-bottom: 16px; }
+.success-screen h2 { font-size: 24px; color: var(--sbi-green); font-weight: 800; margin-bottom: 12px; }
+.success-screen p { font-size: 17px; color: #444; line-height: 1.6; margin-bottom: 20px; }
+.success-screen .ss-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+
+/* =====================================================================
+   LOGGED-IN DASHBOARD
+   ===================================================================== */
+#welcome-strip {
+  background: white;
+  border-bottom: 1px solid #d5e5f5;
+  padding: 12px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #555;
+}
+#welcome-strip .ws-date { line-height: 1.5; }
+#welcome-strip .ws-name { font-weight: 700; font-size: 15px; color: var(--sbi-blue); }
+#welcome-strip .ws-email { color: var(--sbi-red); }
+#profile-bar {
+  background: var(--sbi-blue);
+  color: white;
+  padding: 8px 20px;
+  font-size: 13px;
+  display: none;
+}
+#profile-bar span { opacity: 0.8; }
+#profile-bar strong { opacity: 1; }
+
+/* Dashboard cards */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.dash-card {
+  background: white;
+  border-radius: 10px;
+  padding: 22px 20px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid #d5e5f5;
+  text-align: center;
+  cursor: default;
+}
+.dash-card .dc-icon { font-size: 36px; margin-bottom: 10px; }
+.dash-card h3 { font-size: 15px; color: var(--sbi-blue); font-weight: 700; }
+.dash-card p { font-size: 13px; color: #666; margin-top: 4px; }
+
+/* Promo banner */
+.promo-banner {
+  background: linear-gradient(90deg, #d6eaf8, #eaf4fb);
+  border: 1px solid #aed6f1;
+  border-radius: 8px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #154360;
+}
+.promo-banner strong { color: var(--sbi-blue); }
+
+/* =====================================================================
+   MY ACCOUNTS PAGE
+   ===================================================================== */
+.accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.acc-option {
+  background: white;
+  border: 2px solid #d5e5f5;
+  border-radius: 10px;
+  padding: 22px 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.acc-option:hover {
+  border-color: var(--sbi-cyan);
+  box-shadow: 0 4px 12px rgba(26,171,199,0.15);
+  transform: translateY(-2px);
+}
+.acc-option.step-active {
+  border-color: var(--sbi-cyan);
+  box-shadow: var(--step-glow);
+  animation: pulse-glow 1.5s infinite;
+}
+.acc-option .ao-icon { font-size: 38px; margin-bottom: 10px; }
+.acc-option h3 { font-size: 14px; font-weight: 700; color: var(--sbi-blue); }
+
+/* =====================================================================
+   STATEMENT PAGE
+   ===================================================================== */
+.statement-form { max-width: 700px; }
+.radio-group { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
+.radio-group label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 15px; font-weight: 500;
+  cursor: pointer;
+  padding: 8px 14px;
+  border: 2px solid #c5d9ea;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.radio-group label:has(input:checked) {
+  border-color: var(--sbi-cyan);
+  background: #e8f7fc;
+  font-weight: 700;
+}
+.radio-group input[type="radio"] { accent-color: var(--sbi-cyan); width: 16px; height: 16px; }
+.statement-table-wrap {
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #d5e5f5;
+  margin-top: 16px;
+}
+.statement-table-header {
+  background: var(--sbi-blue);
+  color: white;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.statement-table-demo {
+  background: #fffbf0;
+  border: 2px dashed #f0a500;
+  border-radius: 6px;
+  padding: 10px 16px;
+  margin: 10px 18px;
+  font-size: 13px;
+  color: #7d4e00;
+  font-weight: 600;
+}
+.statement-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.statement-table th {
+  background: #eaf4fb;
+  color: var(--sbi-blue);
+  font-weight: 700;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--sbi-blue-light);
+}
+.statement-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #edf2f7;
+  color: #2c3e50;
+}
+.statement-table tr:nth-child(even) td { background: #f8fbff; }
+.amt-credit { color: var(--sbi-green); font-weight: 600; }
+.amt-debit  { color: var(--sbi-red);   font-weight: 600; }
+
+/* =====================================================================
+   FEEDBACK SCREEN
+   =====================================================================*/
+.feedback-card {
+  background: white;
+  border-radius: 12px;
+  padding: 32px 28px;
+  box-shadow: var(--card-shadow);
+  max-width: 640px;
+  margin: 0 auto;
+}
+.feedback-card h2 { font-size: 22px; color: var(--sbi-blue); font-weight: 800; margin-bottom: 6px; }
+.feedback-card .congrats { font-size: 16px; color: #555; margin-bottom: 24px; line-height: 1.6; }
+.fb-question { margin-bottom: 22px; }
+.fb-question h3 { font-size: 16px; font-weight: 700; color: #2c3e50; margin-bottom: 10px; }
+.fb-options { display: flex; gap: 10px; flex-wrap: wrap; }
+.fb-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 2px solid var(--sbi-blue-light);
+  background: white;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.fb-btn:hover { border-color: var(--sbi-cyan); background: #eaf7fc; }
+.fb-btn.selected { border-color: var(--sbi-cyan); background: var(--sbi-blue); color: white; }
+.fb-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  border: 2px solid #c5d9ea;
+  border-radius: 6px;
+  font-family: var(--font-main);
+  min-height: 80px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.fb-textarea:focus { border-color: var(--sbi-cyan); }
+.certificate {
+  background: linear-gradient(135deg, #eaf4fb, #d6edf9);
+  border: 3px solid var(--sbi-blue);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin: 20px 0;
+}
+.certificate .cert-icon { font-size: 48px; }
+.certificate h3 { font-size: 18px; color: var(--sbi-blue); font-weight: 800; margin: 10px 0 6px; }
+.certificate p { font-size: 14px; color: #555; }
+
+/* =====================================================================
+   ANIMATIONS
+   ===================================================================== */
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 0 3px rgba(26,171,199,0.5), 0 0 16px rgba(26,171,199,0.25); }
+  50%      { box-shadow: 0 0 0 5px rgba(26,171,199,0.3), 0 0 24px rgba(26,171,199,0.4); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.screen.active { animation: fadeIn 0.3s ease; }
+
+/* =====================================================================
+   FOOTER
+   ===================================================================== */
+#sbi-footer {
+  background: #2c3e50;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  padding: 14px;
+  font-size: 13px;
+  margin-top: 40px;
+}
+#sbi-footer a { color: rgba(255,255,255,0.5); text-decoration: none; }
+
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width: 600px) {
+  body { font-size: 16px; }
+  .form-card { padding: 20px 16px; }
+  .disclaimer-box { padding: 24px 16px; }
+  #main-content { padding: 16px 10px 50px; }
+  .decision-buttons { flex-direction: column; }
+  .btn-decision { min-width: 0; }
+  .feedback-card { padding: 20px 14px; }
+}
+
+/* ── dimmed areas ── */
+.dimmed { opacity: 0.42; pointer-events: none; filter: grayscale(30%); }
+</style>
+</head>
+<body>
+
+<!-- ====================================================================
+     GLOBAL WARNING BANNER (always visible on credential-entry screens)
+     ==================================================================== -->
+<div id="global-warning">
+  <span class="warn-icon">⚠️</span>
+  <span><strong>TRAINING SIMULATION ONLY</strong> — DO NOT ENTER YOUR REAL BANKING USERNAME, PASSWORD, OTP, OR ACCOUNT DETAILS. &nbsp;|&nbsp; यह केवल अभ्यास डेमो है। असली जानकारी दर्ज न करें।</span>
+</div>
+
+<!-- ====================================================================
+     SBI HEADER
+     ==================================================================== -->
+<header id="sbi-header">
+  <div class="sbi-logo-area">
+    <div class="sbi-logo-circle">SBI</div>
+    <div class="sbi-logo-text">
+      <div class="sbi-name">SBI</div>
+      <div class="sbi-sub">ONLINE</div>
+    </div>
+  </div>
+  <div class="sbi-header-right">
+    <span class="training-badge">📚 Training Demo</span>
+    <button id="hamburger-btn" aria-label="Open menu" title="Open Menu">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+    <button id="logout-btn" onclick="doLogout()">⏻ LOGOUT</button>
+  </div>
+</header>
+
+<!-- ====================================================================
+     SIDEBAR OVERLAY + MENU
+     ==================================================================== -->
+<div id="sidebar-overlay" onclick="closeSidebar()"></div>
+<nav id="sidebar" aria-label="Main Menu">
+  <div class="sidebar-header">
+    <span>☰ Main Menu</span>
+    <button id="close-sidebar" onclick="closeSidebar()" aria-label="Close menu">✕</button>
+  </div>
+  <ul class="sidebar-menu">
+    <li><a onclick="closeSidebar()" id="menu-home"><span class="menu-icon">🏠</span> Home</a></li>
+    <li><a onclick="goMyAccounts()" id="menu-myacc"><span class="menu-icon">🏦</span> My Accounts &amp; Profile</a></li>
+    <li><a class="dimmed"><span class="menu-icon">💸</span> Payments / Transfers</a></li>
+    <li><a class="dimmed"><span class="menu-icon">📱</span> Bill Payments</a></li>
+    <li><a class="dimmed"><span class="menu-icon">📈</span> Deposit &amp; Investment</a></li>
+    <li><a class="dimmed"><span class="menu-icon">🧾</span> e-Tax</a></li>
+    <li><a class="dimmed"><span class="menu-icon">🛎️</span> e-Services</a></li>
+    <li><a class="dimmed"><span class="menu-icon">📩</span> Request &amp; Enquiries</a></li>
+    <li><a class="dimmed"><span class="menu-icon">🔗</span> Useful Links</a></li>
+    <li><a onclick="doLogout()"><span class="menu-icon">🚪</span> Logout</a></li>
+  </ul>
+</nav>
+
+<!-- ====================================================================
+     BREADCRUMB (shown in post-login screens)
+     ==================================================================== -->
+<div id="breadcrumb">
+  <span>You are here: / </span><strong id="breadcrumb-text">Home</strong>
+</div>
+
+<!-- ====================================================================
+     MAIN CONTENT
+     ==================================================================== -->
+<main id="main-content">
+
+  <!-- ================================================================
+       SCREEN 0: DISCLAIMER
+       ================================================================ -->
+  <section id="screen-disclaimer" class="screen active">
+    <div class="disclaimer-box">
+      <div class="disc-icon">🎓</div>
+      <h1>⚠️ Before You Begin – Important Notice</h1>
+      <div class="disc-main">
+        This is a TRAINING SIMULATION only.<br>
+        Do NOT enter your real SBI username, password, OTP, or account number.
+      </div>
+      <p class="disc-sub">
+        This practice demo does <strong>not</strong> connect to the real SBI website.<br>
+        It does <strong>not</strong> save, submit, or store any information you enter.<br>
+        Please still use only <em>sample / practice details</em> for your own safety.
+      </p>
+      <ul class="disc-checklist">
+        <li>Use any made-up username (e.g. "SampleUser123")</li>
+        <li>Use any made-up password (e.g. "Practice@1")</li>
+        <li>Use the sample OTP shown on screen (123456)</li>
+        <li>No data is sent to SBI or any server</li>
+        <li>You can safely practice all steps here</li>
+      </ul>
+      <p style="font-size:14px;color:#777;margin-bottom:24px;">
+        यह प्रशिक्षण सिमुलेशन है। कृपया असली बैंकिंग विवरण दर्ज न करें।
+      </p>
+      <button class="btn-primary" onclick="startTraining()">
+        ✅ I Understand — Start Training
+      </button>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN A: LOGIN
+       ================================================================ -->
+  <section id="screen-login" class="screen">
+    <!-- Progress -->
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="login-progress" style="width:12%"></div></div>
+    <div class="progress-label" id="login-progress-label">Step 1 of 4 — Enter Username</div>
+
+    <!-- Instruction card -->
+    <div class="instruction-card" id="login-ic">
+      <div class="ic-header">
+        <span class="ic-step-badge" id="login-ic-badge">STEP 1</span>
+        <span class="ic-title" id="login-ic-title">Enter Your Username / Customer ID</span>
+      </div>
+      <div class="ic-body" id="login-ic-body">
+        This is where you enter your Username or Customer ID.
+        For this practice demo, please use any sample text — e.g. <strong>"SampleUser123"</strong>.
+        <strong style="color:var(--sbi-red)"> Do NOT enter your real banking username.</strong>
+      </div>
+      <div class="ic-note" id="login-ic-note"></div>
+      <div class="ic-actions">
+        <button class="btn-speak" onclick="speak('login')">🔊 Read Aloud</button>
+        <button class="btn-speak" onclick="speak('login')">🔁 Repeat</button>
+      </div>
+    </div>
+
+    <!-- Warning reminder -->
+    <div style="background:var(--warn-bg);border:2px solid var(--warn-border);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px;color:var(--warn-text);font-weight:600;">
+      ⚠️ Reminder: Do NOT use your real bank credentials on this training page.
+    </div>
+
+    <!-- Login form card -->
+    <div class="form-card">
+      <h2>Login to OnlineSBI</h2>
+      <p class="card-subtitle">(CARE: Username and password are case sensitive.)</p>
+
+      <!-- Step A1: Username -->
+      <div class="form-group" id="fg-username">
+        <label for="inp-username">Username <span class="req">*</span></label>
+        <input type="text" id="inp-username" placeholder="Enter sample username"
+               autocomplete="off" oninput="onUsernameInput()" />
+        <div class="success-note" id="note-username">✅ Great! You completed the first step.</div>
+        <div class="error-note"   id="err-username">Please type something before moving ahead.</div>
+      </div>
+
+      <!-- Step A2: Password (dimmed initially) -->
+      <div class="form-group dimmed" id="fg-password">
+        <label for="inp-password">Password <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="inp-password" placeholder="Enter sample password"
+                 autocomplete="off" disabled oninput="onPasswordInput()" />
+          <button class="pw-toggle" id="pw-toggle-btn" onclick="togglePw()" type="button" aria-label="Show/hide password">👁️</button>
+        </div>
+        <div class="success-note" id="note-password">✅ Well done. Now you are ready to log in.</div>
+<div class="error-note"   id="err-password">Please use a strong password (min 8 chars, 1 letter, 1 number, 1 symbol).</div>      </div>
+
+      <!-- Step A3: CAPTCHA (dimmed initially) -->
+      <div class="form-group dimmed" id="fg-captcha">
+        <label>Enter the text as shown in the image <span class="req">*</span></label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
+          <label style="font-size:14px;font-weight:500;display:flex;align-items:center;gap:5px;">
+            <input type="radio" name="captcha-type" checked style="accent-color:var(--sbi-red);width:14px;height:14px;"> <span style="color:var(--sbi-red);font-weight:700;">Image Captcha</span>
+          </label>
+          <label style="font-size:14px;font-weight:500;display:flex;align-items:center;gap:5px;">
+            <input type="radio" name="captcha-type" style="accent-color:var(--sbi-red);width:14px;height:14px;"> <span style="color:var(--sbi-red);font-weight:700;">Audio Captcha</span>
+          </label>
+        </div>
+        <div class="captcha-area">
+          <div class="captcha-img" id="captcha-display">7x2g2</div>
+          <button class="btn-refresh" onclick="refreshCaptcha('login')" type="button" title="Refresh Captcha">🔄</button>
+          <input type="text" id="inp-captcha" placeholder="Type captcha here"
+                 style="flex:1;min-width:140px;"
+                 autocomplete="off" disabled oninput="onCaptchaInput()" />
+        </div>
+        <div style="font-size:12px;color:#888;margin-top:4px;">
+          💡 Training hint: The captcha for this demo is always: <strong id="captcha-hint">7x2g2</strong>
+        </div>
+        <div class="success-note" id="note-captcha">✅ Captcha accepted.</div>
+        <div class="error-note"   id="err-captcha">Please type the captcha text shown in the image.</div>
+      </div>
+
+      <!-- Step A4: Decision (hidden until pwd done) -->
+      <div id="decision-box" class="decision-card" style="display:none;">
+        <h3>🤔 Quick Check — Do you remember your password?</h3>
+        <p style="font-size:14px;color:#666;margin-bottom:14px;">Take your time — this is only a practice session!</p>
+        <div class="decision-buttons">
+          <button class="btn-decision yes" onclick="goForgotPassword()">😕 Yes, I forgot my password</button>
+          <button class="btn-decision no"  onclick="enableLoginButton()">👍 No, I remember it — Continue to Login</button>
+        </div>
+      </div>
+
+      <!-- Forgot password link -->
+      <div style="margin-top:10px;margin-bottom:4px;">
+        <button class="forgot-link" onclick="goForgotPassword()" id="forgot-link-btn">Forgot Username / Login Password?</button>
+      </div>
+
+      <!-- Form actions -->
+      <div class="form-actions" style="margin-top:16px;">
+        <button class="btn-login" id="btn-login-submit" disabled onclick="doLogin()">Login</button>
+        <button class="btn-reset-grey" onclick="resetLoginForm()">Reset</button>
+      </div>
+    </div>
+
+    <!-- Security notice (SBI style) -->
+    <div style="font-size:13px;color:#666;padding:8px 4px;">
+      For better security use the Online Virtual Keyboard to login. &nbsp;<em>(Simulation only)</em>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN B: FORGOT PASSWORD
+       ================================================================ -->
+  <section id="screen-forgot" class="screen">
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="forgot-progress" style="width:16%"></div></div>
+    <div class="progress-label" id="forgot-progress-label">Step 1 of 6 — Forgot Password</div>
+
+    <div class="instruction-card" id="forgot-ic">
+      <div class="ic-header">
+        <span class="ic-step-badge" id="forgot-ic-badge">STEP B1</span>
+        <span class="ic-title" id="forgot-ic-title">Enter Your Username</span>
+      </div>
+      <div class="ic-body" id="forgot-ic-body">
+        First, enter your Username or Customer ID so the system knows which account you want to recover.
+        For this practice demo, use sample details only. <strong style="color:var(--sbi-red)">Do NOT use real credentials.</strong>
+      </div>
+      <div class="ic-note" id="forgot-ic-note"></div>
+      <div class="ic-actions">
+        <button class="btn-speak" onclick="speak('forgot')">🔊 Read Aloud</button>
+        <button class="btn-speak" onclick="speak('forgot')">🔁 Repeat</button>
+      </div>
+    </div>
+
+    <div style="background:var(--warn-bg);border:2px solid var(--warn-border);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px;color:var(--warn-text);font-weight:600;">
+      ⚠️ TRAINING DEMO: Do NOT enter real account details, mobile number, or date of birth.
+    </div>
+
+    <div class="form-card">
+      <h2>Trouble Logging In — Forgot Login Password?</h2>
+      <p class="card-subtitle">Mandatory fields are marked with an asterisk (*)</p>
+
+      <!-- B1: Username -->
+      <div class="form-group" id="fg-fp-user">
+        <label for="fp-username">Username <span class="req">*</span></label>
+        <input type="text" id="fp-username" placeholder="Enter sample username" autocomplete="off" oninput="fpStep1Input()"/>
+        <div class="success-note" id="fp-note-user">✅ Good. Moving to the next step.</div>
+        <div class="error-note"   id="fp-err-user">Please enter a sample username.</div>
+      </div>
+
+      <!-- B2: Account number -->
+      <div class="form-group dimmed" id="fg-fp-acc">
+        <label for="fp-acc">Account Number <span class="req">*</span></label>
+        <input type="text" id="fp-acc" placeholder="Enter sample account number" autocomplete="off" disabled oninput="fpStep2Input()"/>
+        <div class="success-note" id="fp-note-acc">✅ Great!</div>
+        <div class="error-note"   id="fp-err-acc">Please enter a sample account number.</div>
+      </div>
+
+      <!-- B3: Mobile number -->
+      <div class="form-group dimmed" id="fg-fp-mobile">
+        <label for="fp-mobile">Registered Mobile Number <span class="req">*</span></label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" value="+91" disabled style="width:60px;text-align:center;font-weight:700;" readonly/>
+          <input type="text" id="fp-mobile" placeholder="Enter sample mobile number" autocomplete="off" disabled oninput="fpStep3Input()" style="flex:1;"/>
+        </div>
+        <div class="success-note" id="fp-note-mobile">✅ Noted.</div>
+        <div class="error-note"   id="fp-err-mobile">Please enter a sample mobile number.</div>
+      </div>
+
+      <!-- B3b: Date of birth -->
+      <div class="form-group dimmed" id="fg-fp-dob">
+        <label for="fp-dob">Date of Birth <span class="req">*</span></label>
+        <input type="text" id="fp-dob" placeholder="[dd/mm/yyyy]" autocomplete="off" disabled oninput="fpStep3bInput()"/>
+        <div class="success-note" id="fp-note-dob">✅ Done.</div>
+        <div class="error-note"   id="fp-err-dob">Please enter a sample date of birth (e.g. 01/01/1990).</div>
+      </div>
+
+      <!-- B4: OTP -->
+      <div class="form-group dimmed" id="fg-fp-otp">
+        <label for="fp-otp">One Time Password (OTP) <span class="req">*</span></label>
+        <div class="otp-hint">🔑 Practice OTP for this demo: <span style="font-size:20px;letter-spacing:3px;margin-left:8px;">123456</span></div>
+        <input type="text" id="fp-otp" placeholder="Enter the sample OTP shown above" autocomplete="off" disabled maxlength="6" oninput="fpOtpInput()"/>
+        <div class="success-note" id="fp-note-otp">✅ OTP accepted. Well done!</div>
+        <div class="error-note"   id="fp-err-otp">Please enter the practice OTP: 123456</div>
+      </div>
+
+      <!-- B5 & B6: New Password + Confirm -->
+      <div class="form-group dimmed" id="fg-fp-newpw">
+        <label for="fp-newpw">New Password <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="fp-newpw" placeholder="Create a sample new password" autocomplete="off" disabled oninput="fpNewPwInput()"/>
+          <button class="pw-toggle" onclick="toggleFpPw('fp-newpw')" type="button">👁️</button>
+        </div>
+        <div style="font-size:13px;color:#888;margin-top:4px;">💡 Use any sample password, e.g. "Practice@1". Do NOT use your real password.</div>
+        <div class="success-note" id="fp-note-newpw">✅ Sample password entered.</div>
+        <div class="error-note"   id="fp-err-newpw">Please use a strong password (min 8 chars, 1 letter, 1 number, 1 symbol).</div>
+      </div>
+
+      <div class="form-group dimmed" id="fg-fp-confirmpw">
+        <label for="fp-confirmpw">Confirm New Password <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="fp-confirmpw" placeholder="Re-type the same sample password" autocomplete="off" disabled oninput="fpConfirmPwInput()"/>
+          <button class="pw-toggle" onclick="toggleFpPw('fp-confirmpw')" type="button">👁️</button>
+        </div>
+        <div class="success-note" id="fp-note-confirmpw">✅ Passwords match. Excellent!</div>
+        <div class="error-note"   id="fp-err-confirmpw">The two passwords do not match. Please check and try again.</div>
+      </div>
+
+      <div class="form-actions" style="margin-top:20px;">
+        <button class="btn-primary" id="btn-fp-reset" disabled onclick="doPasswordReset()">Reset Password</button>
+        <button class="btn-outline" onclick="backToLogin()">← Back to Login</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN B-SUCCESS: Password Reset Done
+       ================================================================ -->
+  <section id="screen-forgot-success" class="screen">
+    <div class="success-screen">
+      <div class="ss-icon">🎉</div>
+      <h2>Password Reset Successful!</h2>
+      <p>Great job! You have completed the password reset practice.<br>
+      Now let's practice logging in with your new sample password.</p>
+      <div class="ss-actions">
+        <button class="btn-primary" onclick="returnToLoginAfterReset()">→ Return to Login Page</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN A-SUCCESS: Login done (after reset path)
+       ================================================================ -->
+  <section id="screen-login-after-reset" class="screen">
+    <div style="background:var(--warn-bg);border:2px solid var(--warn-border);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px;color:var(--warn-text);font-weight:600;">
+      ⚠️ TRAINING DEMO: Use sample credentials only.
+    </div>
+    <div class="instruction-card">
+      <div class="ic-header">
+        <span class="ic-step-badge">GREAT!</span>
+        <span class="ic-title">Practice Login After Password Reset</span>
+      </div>
+      <div class="ic-body">
+        Now let's practice logging in with your new password.
+        Enter any sample username and your sample new password, then click Login.
+        <span class="ic-note">You're doing really well — take your time! 😊</span>
+      </div>
+    </div>
+    <div class="form-card">
+      <h2>Login to OnlineSBI</h2>
+      <p class="card-subtitle">Now practice logging in with the new password you just set.</p>
+      <div class="form-group">
+        <label for="ar-username">Username <span class="req">*</span></label>
+        <input type="text" id="ar-username" placeholder="Enter sample username" autocomplete="off"/>
+      </div>
+      <div class="form-group">
+        <label for="ar-password">New Password <span class="req">*</span></label>
+        <div class="pw-wrap">
+          <input type="password" id="ar-password" placeholder="Enter your sample new password" autocomplete="off"/>
+          <button class="pw-toggle" onclick="toggleArPw()" type="button">👁️</button>
+        </div>
+      </div>
+      <div class="error-note" id="ar-err" style="margin-bottom:12px;"></div>
+      <div class="form-actions">
+        <button class="btn-login" onclick="doLoginAfterReset()">Login</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN D: DASHBOARD / HOME
+       ================================================================ -->
+  <section id="screen-dashboard" class="screen">
+    <!-- Last login strip -->
+    <div style="background:white;border-bottom:1px solid #d5e5f5;padding:8px 16px;font-size:13px;color:#555;text-align:center;">
+      Last Login Date &amp; Time: <strong id="last-login-time"></strong>
+    </div>
+
+    <!-- Welcome strip -->
+    <div id="welcome-strip">
+      <div class="ws-date" id="ws-date"></div>
+      <div>
+        <div>Welcome</div>
+        <div class="ws-name">Mr. Sample User</div>
+        <div class="ws-email">sampleuser@email.com — <span style="color:var(--sbi-red);font-style:italic;">Please verify (Demo)</span></div>
+      </div>
+    </div>
+
+    <!-- Instruction card for hamburger -->
+    <div class="instruction-card" id="dash-ic" style="margin-top:16px;">
+      <div class="ic-header">
+        <span class="ic-step-badge">STEP D1</span>
+        <span class="ic-title">Open the Main Menu</span>
+      </div>
+      <div class="ic-body">
+        🎉 <strong>Excellent! You have successfully completed the login practice.</strong><br><br>
+        Now look at the <strong>top-left area</strong> of the page header — you will see three horizontal lines (☰).
+        That is the <strong>Main Menu button</strong>. Many banking options like "My Accounts" can be found there.
+        <br><br><strong>Click the ☰ button in the top header to continue.</strong>
+      </div>
+      <div class="ic-actions">
+        <button class="btn-speak" onclick="speak('dashboard')">🔊 Read Aloud</button>
+      </div>
+    </div>
+
+    <!-- Promo -->
+    <div class="promo-banner">
+      <strong>SBI Credit Card</strong> — Welcome Gift worth up to ₹5,000 awaits you! <em>(Training Demo)</em>
+    </div>
+
+    <!-- "You are here" bar -->
+    <div style="background:var(--sbi-blue);color:white;padding:10px 16px;border-radius:6px;font-size:14px;font-weight:600;margin-bottom:16px;">
+      You are here: / My Accounts &amp; Profile / <strong>Home Dashboard</strong>
+    </div>
+
+    <!-- Dashboard cards -->
+    <div class="dashboard-grid">
+      <div class="dash-card"><div class="dc-icon">💰</div><h3>Account Balance</h3><p>Click to view (Demo)</p></div>
+      <div class="dash-card"><div class="dc-icon">💳</div><h3>Debit Card</h3><p>Manage your card (Demo)</p></div>
+      <div class="dash-card"><div class="dc-icon">📤</div><h3>Fund Transfer</h3><p>Send money (Demo)</p></div>
+      <div class="dash-card"><div class="dc-icon">📋</div><h3>Account Statement</h3><p>View transactions (Demo)</p></div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN E: MY ACCOUNTS
+       ================================================================ -->
+  <section id="screen-myaccounts" class="screen">
+    <div class="instruction-card" id="myacc-ic">
+      <div class="ic-header">
+        <span class="ic-step-badge">STEP F1</span>
+        <span class="ic-title">Choose "Account Statement"</span>
+      </div>
+      <div class="ic-body" id="myacc-ic-body">
+        You are now inside the <strong>My Accounts</strong> section.
+        This section contains account-related options like balances, statements, and account services.
+        <br><br>
+        To get a copy of your bank statement, choose <strong>"Account Statement"</strong> (highlighted below).
+      </div>
+      <div class="ic-actions">
+        <button class="btn-speak" onclick="speak('myaccounts')">🔊 Read Aloud</button>
+      </div>
+    </div>
+
+    <!-- Welcome strip -->
+    <div id="welcome-strip-2">
+      <div style="background:white;border-bottom:1px solid #d5e5f5;padding:8px 16px;font-size:13px;color:#555;">
+        <span style="color:#555;">Welcome</span> <strong style="color:var(--sbi-blue)">Mr. Sample User</strong> &nbsp;|&nbsp;
+        <span style="color:var(--sbi-red);font-size:12px;">sampleuser@email.com — Please verify (Demo)</span>
+      </div>
+    </div>
+
+    <div style="background:var(--sbi-blue);color:white;padding:10px 16px;border-radius:6px;font-size:14px;font-weight:600;margin-bottom:16px;margin-top:8px;">
+      You are here: / <strong>My Accounts &amp; Profile</strong>
+    </div>
+
+    <div class="form-card">
+      <h2>My Accounts</h2>
+      <div class="accounts-grid">
+        <div class="acc-option" onclick="goAccountStatement()" id="opt-acc-stmt">
+          <div class="ao-icon">📋</div>
+          <h3>Account Statement</h3>
+        </div>
+        <div class="acc-option dimmed">
+          <div class="ao-icon">📊</div>
+          <h3>Account Summary</h3>
+        </div>
+        <div class="acc-option dimmed">
+          <div class="ao-icon">👤</div>
+          <h3>Profile</h3>
+        </div>
+        <div class="acc-option dimmed">
+          <div class="ao-icon">🖥️</div>
+          <h3>e-Statement</h3>
+        </div>
+        <div class="acc-option dimmed">
+          <div class="ao-icon">🕐</div>
+          <h3>Pending Statement</h3>
+        </div>
+        <div class="acc-option dimmed">
+          <div class="ao-icon">📉</div>
+          <h3>Transactions</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN G: ACCOUNT STATEMENT
+       ================================================================ -->
+  <section id="screen-statement" class="screen">
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="stmt-progress" style="width:20%"></div></div>
+    <div class="progress-label" id="stmt-progress-label">Step 1 of 5 — Select Account</div>
+
+    <div class="instruction-card" id="stmt-ic">
+      <div class="ic-header">
+        <span class="ic-step-badge" id="stmt-ic-badge">STEP G1</span>
+        <span class="ic-title" id="stmt-ic-title">Select Your Account</span>
+      </div>
+      <div class="ic-body" id="stmt-ic-body">
+        First, choose which account you want the statement for.
+        In this demo, a sample account is already available. Select it using the radio button.
+      </div>
+      <div class="ic-note" id="stmt-ic-note"></div>
+      <div class="ic-actions">
+        <button class="btn-speak" onclick="speak('statement')">🔊 Read Aloud</button>
+        <button class="btn-speak" onclick="speak('statement')">🔁 Repeat</button>
+      </div>
+    </div>
+
+    <div style="background:var(--warn-bg);border:2px solid var(--warn-border);border-radius:8px;padding:10px 16px;margin-bottom:16px;font-size:14px;color:var(--warn-text);font-weight:600;">
+      ⚠️ This is a training demo. All account numbers and transaction data shown are sample/dummy values only.
+    </div>
+
+    <div style="background:var(--sbi-blue);color:white;padding:10px 16px;border-radius:6px;font-size:14px;font-weight:600;margin-bottom:16px;">
+      You are here: / My Accounts &amp; Profile / <strong>Account Statement</strong>
+    </div>
+
+    <div class="form-card statement-form">
+      <h2>Account Statement</h2>
+
+      <!-- G1: Select Account -->
+      <div class="form-group" id="sg-acc">
+        <label style="font-size:16px;font-weight:700;color:var(--sbi-blue);margin-bottom:12px;display:block;">Select an account</label>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:12px;">
+          <thead>
+            <tr style="background:#eaf4fb;">
+              <th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--sbi-blue-light);"></th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--sbi-blue-light);">Account No. / Nick Name</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--sbi-blue-light);">Account Type</th>
+              <th style="padding:8px 10px;text-align:left;border-bottom:2px solid var(--sbi-blue-light);">Branch</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:10px;"><input type="radio" name="stmt-acc" id="stmt-acc-radio" style="width:18px;height:18px;accent-color:var(--sbi-blue);" onchange="onAccSelect()"/></td>
+              <td style="padding:10px;font-weight:600;">0000XXXXXXXX01</td>
+              <td style="padding:10px;">Savings Account</td>
+              <td style="padding:10px;">NEW PANVEL (WEST) BRANCH</td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="font-size:14px;font-weight:600;color:#2c3e50;">Selected Account Number: <span id="selected-acc-disp" style="color:var(--sbi-blue);">—</span></div>
+        <div class="success-note" id="stmt-note-acc">✅ Account selected. Moving to next step.</div>
+      </div>
+
+      <!-- G2: Statement period (dimmed until acc selected) -->
+      <div class="form-group dimmed" id="sg-period">
+        <label style="font-size:16px;font-weight:700;color:var(--sbi-blue);margin-bottom:10px;display:block;">Select options for the statement period</label>
+        <div style="background:#f0f7ff;border:1px solid #b8d4e8;border-radius:6px;padding:12px 14px;font-size:13px;color:#444;margin-bottom:14px;line-height:1.6;">
+          In case the Account Statement does not reflect all your transactions, please Download statement from the
+          'Pending Statement' link under the 'My Accounts' tab after some time.
+        </div>
+        <div class="radio-group" style="margin-bottom:14px;">
+          <label><input type="radio" name="period-type" value="bydate" checked onchange="onPeriodChange(this)"> By Date</label>
+          <label><input type="radio" name="period-type" value="bymonth" onchange="onPeriodChange(this)"> By Month</label>
+          <label><input type="radio" name="period-type" value="6months" onchange="onPeriodChange(this)"> Last 6 Months</label>
+          <label><input type="radio" name="period-type" value="fy" onchange="onPeriodChange(this)"> Financial Year</label>
+        </div>
+
+        <!-- By Date fields -->
+        <div id="period-bydate">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label for="stmt-from" style="font-size:14px;font-weight:600;margin-bottom:4px;display:block;">Start Date</label>
+              <input type="text" id="stmt-from" placeholder="[dd/mm/yyyy]" autocomplete="off" oninput="onDateInput()"/>
+            </div>
+            <div>
+              <label for="stmt-to" style="font-size:14px;font-weight:600;margin-bottom:4px;display:block;">End Date</label>
+              <input type="text" id="stmt-to" placeholder="[dd/mm/yyyy]" autocomplete="off" oninput="onDateInput()"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- By Month fields -->
+        <div id="period-bymonth" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+            <div>
+              <label style="font-size:14px;font-weight:600;margin-bottom:4px;display:block;">From Month</label>
+              <select id="stmt-from-month" onchange="onDateInput()">
+                <option value="">— Select Month —</option>
+                <option>January 2025</option><option>February 2025</option><option>March 2025</option>
+                <option>April 2025</option><option>May 2025</option><option>June 2025</option>
+                <option>July 2025</option><option>August 2025</option><option>September 2025</option>
+                <option>October 2025</option><option>November 2025</option><option>December 2025</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:14px;font-weight:600;margin-bottom:4px;display:block;">To Month</label>
+              <select id="stmt-to-month" onchange="onDateInput()">
+                <option value="">— Select Month —</option>
+                <option>January 2025</option><option>February 2025</option><option>March 2025</option>
+                <option>April 2025</option><option>May 2025</option><option>June 2025</option>
+                <option>July 2025</option><option>August 2025</option><option>September 2025</option>
+                <option>October 2025</option><option>November 2025</option><option>December 2025</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial Year dropdown -->
+        <div id="period-fy" style="display:none;">
+          <label style="font-size:14px;font-weight:600;margin-bottom:4px;display:block;">Financial Year</label>
+          <select id="stmt-fy" style="width:180px;" onchange="onDateInput()">
+            <option value="">— Select —</option>
+            <option>2024-2025</option>
+            <option>2023-2024</option>
+            <option>2022-2023</option>
+          </select>
+        </div>
+
+        <div class="success-note" id="stmt-note-period" style="margin-top:10px;">✅ Period selected. Moving to next step.</div>
+        <div class="error-note" id="stmt-err-period">Please fill in the date/period fields to continue.</div>
+      </div>
+
+      <!-- G3: Output format -->
+      <div class="form-group dimmed" id="sg-format">
+        <label style="font-size:16px;font-weight:700;color:var(--sbi-blue);margin-bottom:10px;display:block;">Select appropriate options to view, print or download the statement</label>
+        <div class="radio-group">
+          <label><input type="radio" name="stmt-format" value="view" checked onchange="onFormatChange()"> View</label>
+          <label><input type="radio" name="stmt-format" value="excel" onchange="onFormatChange()"> Download in MS Excel format</label>
+          <label><input type="radio" name="stmt-format" value="pdf" onchange="onFormatChange()"> Download in PDF format</label>
+          <label><input type="radio" name="stmt-format" value="digilocker" onchange="onFormatChange()"> Upload to DigiLocker</label>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap;">
+          <label style="font-size:14px;font-weight:600;">Number of Records Per Page:</label>
+          <select style="width:100px;padding:6px 10px;font-size:14px;border:2px solid #c5d9ea;border-radius:4px;">
+            <option>ALL</option><option>10</option><option>25</option><option>50</option>
+          </select>
+        </div>
+        <div class="success-note" id="stmt-note-format">✅ Format selected.</div>
+      </div>
+
+      <!-- G4: Buttons -->
+      <div class="form-actions dimmed" id="sg-buttons" style="margin-top:20px;">
+        <button class="btn-primary" id="btn-go-stmt" onclick="generateStatement()" disabled>Go</button>
+        <button class="btn-reset-grey" onclick="resetStatement()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- G5: Statement Preview (hidden until generated) -->
+    <div id="stmt-preview" style="display:none;margin-top:20px;">
+      <div class="instruction-card">
+        <div class="ic-header">
+          <span class="ic-step-badge">STEP G4-G5</span>
+          <span class="ic-title">Statement Preview — Now Download</span>
+        </div>
+        <div class="ic-body">
+          Your sample statement has been generated below. Review the transactions.
+          When ready, click <strong>"Download Statement"</strong> to complete the practice.
+          In a real app, this would save a PDF or Excel file to your device.
+        </div>
+        <div class="ic-actions">
+          <button class="btn-speak" onclick="speak('stmtdownload')">🔊 Read Aloud</button>
+        </div>
+      </div>
+      <div class="statement-table-wrap">
+        <div class="statement-table-header">📄 Sample Statement Preview — <span style="font-size:13px;font-weight:400;opacity:0.85;">Account: 0000XXXXXXXX01 | Period: Jan 2025 – Mar 2025</span></div>
+        <div class="statement-table-demo">⚠️ Sample Statement Preview (Training Demo Only) — All data shown is fictitious and for practice purposes only.</div>
+        <div style="overflow-x:auto;padding:0 4px 12px;">
+          <table class="statement-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Ref No.</th>
+                <th>Debit (₹)</th>
+                <th>Credit (₹)</th>
+                <th>Balance (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>01/01/2025</td><td>Opening Balance</td><td>—</td><td>—</td><td>—</td><td class="amt-credit">25,000.00</td></tr>
+              <tr><td>05/01/2025</td><td>NEFT - Salary Credit</td><td>NFTX001234</td><td>—</td><td class="amt-credit">35,000.00</td><td class="amt-credit">60,000.00</td></tr>
+              <tr><td>08/01/2025</td><td>ATM Withdrawal - SBI ATM</td><td>ATM9981234</td><td class="amt-debit">5,000.00</td><td>—</td><td>55,000.00</td></tr>
+              <tr><td>12/01/2025</td><td>UPI - Grocery Store</td><td>UPI1122334</td><td class="amt-debit">1,250.00</td><td>—</td><td>53,750.00</td></tr>
+              <tr><td>15/01/2025</td><td>Electricity Bill Payment</td><td>BILL558899</td><td class="amt-debit">1,800.00</td><td>—</td><td>51,950.00</td></tr>
+              <tr><td>20/01/2025</td><td>IMPS - Friend Transfer</td><td>IMPS334455</td><td>—</td><td class="amt-credit">2,000.00</td><td class="amt-credit">53,950.00</td></tr>
+              <tr><td>01/02/2025</td><td>Rent Payment - NEFT</td><td>NFTX009988</td><td class="amt-debit">12,000.00</td><td>—</td><td>41,950.00</td></tr>
+              <tr><td>05/02/2025</td><td>NEFT - Salary Credit</td><td>NFTX002345</td><td>—</td><td class="amt-credit">35,000.00</td><td class="amt-credit">76,950.00</td></tr>
+              <tr><td>14/02/2025</td><td>Online Shopping - Flipkart</td><td>UPI5566778</td><td class="amt-debit">3,499.00</td><td>—</td><td>73,451.00</td></tr>
+              <tr><td>01/03/2025</td><td>NEFT - Salary Credit</td><td>NFTX003456</td><td>—</td><td class="amt-credit">35,000.00</td><td class="amt-credit">1,08,451.00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Download button -->
+      <div style="margin-top:16px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+        <button class="btn-primary" id="btn-download-stmt" onclick="downloadStatement()">
+          ⬇️ Download Statement
+        </button>
+        <button class="btn-outline" onclick="resetStatement()">← Start Over</button>
+      </div>
+    </div>
+
+    <!-- Notes section (SBI style) -->
+    <div style="margin-top:20px;font-size:13px;color:#555;background:white;border:1px solid #d5e5f5;border-radius:8px;padding:14px 18px;">
+      <ul style="list-style:disc;padding-left:20px;line-height:1.8;">
+        <li>Online Statement of Account is available for periods up to 36 months prior to current date.</li>
+        <li>Date range cannot exceed 12 months for each statement request.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN H: FEEDBACK
+       ================================================================ -->
+  <section id="screen-feedback" class="screen">
+    <div class="feedback-card">
+      <div class="certificate">
+        <div class="cert-icon">🏆</div>
+        <h3>Training Completed!</h3>
+        <p>You completed: Login Practice + Password Reset + Account Statement Download</p>
+      </div>
+
+      <h2>How did it go? 😊</h2>
+      <p class="congrats">
+        Congratulations on completing the SBI Online Banking Training!
+        Please answer these quick questions to help us improve the training for others.
+        All answers are optional — take your time.
+      </p>
+
+      <!-- Confidence check -->
+      <div class="fb-question">
+        <h3>💪 How confident do you feel now?</h3>
+        <div class="fb-options" id="fb-conf">
+          <button class="fb-btn" onclick="selectFb(this,'conf')">😊 I can do this on my own</button>
+          <button class="fb-btn" onclick="selectFb(this,'conf')">🤔 I may need one more practice</button>
+          <button class="fb-btn" onclick="selectFb(this,'conf')">🙏 I need more help</button>
+        </div>
+      </div>
+
+      <!-- Hardest part -->
+      <div class="fb-question">
+        <h3>🔍 Which part was hardest?</h3>
+        <div class="fb-options" id="fb-hard">
+          <button class="fb-btn" onclick="selectFb(this,'hard')">🔑 Logging in</button>
+          <button class="fb-btn" onclick="selectFb(this,'hard')">🔄 Resetting password</button>
+          <button class="fb-btn" onclick="selectFb(this,'hard')">☰ Finding the menu</button>
+          <button class="fb-btn" onclick="selectFb(this,'hard')">📋 Downloading statement</button>
+          <button class="fb-btn" onclick="selectFb(this,'hard')">✅ Everything was clear</button>
+        </div>
+      </div>
+
+      <!-- Free text -->
+      <div class="fb-question">
+        <h3>💬 What confused you? (Optional)</h3>
+        <textarea class="fb-textarea" placeholder="You can write in English or Hindi here... यहाँ लिखें..."></textarea>
+      </div>
+
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn-primary" onclick="practiceAgain()">🔁 Practice Again</button>
+        <button class="btn-secondary" onclick="finishTraining()">🎓 Finish Training</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================
+       SCREEN: FINISH
+       ================================================================ -->
+  <section id="screen-finish" class="screen">
+    <div class="success-screen">
+      <div class="ss-icon">🎓</div>
+      <h2>Thank You for Practising!</h2>
+      <p>
+        You have completed the SBI Online Banking Training Simulation.<br><br>
+        <strong>Remember:</strong> When using real SBI Online Banking, always ensure you are on the official website
+        and never share your username, password, or OTP with anyone.
+      </p>
+      <div style="background:#e8f7fd;border:2px solid var(--sbi-cyan);border-radius:8px;padding:16px;text-align:left;font-size:15px;color:#154360;margin-top:8px;margin-bottom:16px;">
+        <strong>🔐 Safety Tips:</strong><br>
+        ✅ Always check the URL before logging in<br>
+        ✅ Never share OTP with anyone — bank never asks<br>
+        ✅ Change your password regularly<br>
+        ✅ Log out after every session<br>
+        ✅ Use bank's official app or website only
+      </div>
+      <div class="ss-actions">
+        <button class="btn-primary" onclick="practiceAgain()">🔁 Practice Again</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ====================================================================
+     FOOTER
+     ==================================================================== -->
+<footer id="sbi-footer">
+  &copy; State Bank of India (Training Simulation — Not the real SBI website)
+  &nbsp;|&nbsp; This demo does not connect to any real banking service.
+  &nbsp;|&nbsp; <a href="#">Privacy Notice</a> &nbsp;|&nbsp; <a href="#">Terms</a>
+</footer>
+
+<!-- ====================================================================
+     JAVASCRIPT
+     ==================================================================== -->
+<script>
+/* =====================================================================
+   STATE MANAGEMENT
+   ===================================================================== */
+const state = {
+  loginStep: 1,      // 1=username, 2=password, 3=captcha, 4=decision, 5=loginbtn
+  forgotStep: 1,     // 1-6
+  stmtStep: 1,       // 1-5
+  fromForgot: false, // whether user came via forgot-password path
+  captchaCode: '7x2g2',
+  captchas: ['7x2g2','k4p9x','m3w6r','9ftz2','bx5hq'],
+  captchaIdx: 0
+};
+
+let stepTimer; // Global timer to prevent mid-typing jumps
+
+/* =====================================================================
+   SCREEN NAVIGATION
+   ===================================================================== */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function setPostLoginUI(show) {
+  document.getElementById('hamburger-btn').style.display = show ? 'flex' : 'none';
+  document.getElementById('logout-btn').style.display = show ? 'block' : 'none';
+  document.getElementById('breadcrumb').style.display = show ? 'block' : 'none';
+}
+
+function setBreadcrumb(text) {
+  document.getElementById('breadcrumb-text').textContent = text;
+}
+
+/* =====================================================================
+   FLOW: DISCLAIMER → LOGIN
+   ===================================================================== */
+function startTraining() {
+  showScreen('screen-login');
+  activateLoginStep(1);
+}
+
+/* =====================================================================
+   FLOW A: LOGIN
+   ===================================================================== */
+function activateLoginStep(step) {
+  state.loginStep = step;
+  const ic = {
+    badge: document.getElementById('login-ic-badge'),
+    title: document.getElementById('login-ic-title'),
+    body:  document.getElementById('login-ic-body'),
+    note:  document.getElementById('login-ic-note')
+  };
+  const prog = document.getElementById('login-progress');
+  const progLabel = document.getElementById('login-progress-label');
+  const fgUser = document.getElementById('fg-username');
+  const fgPass = document.getElementById('fg-password');
+  const fgCap  = document.getElementById('fg-captcha');
+  const inpUser = document.getElementById('inp-username');
+  const inpPass = document.getElementById('inp-password');
+  const inpCap  = document.getElementById('inp-captcha');
+  const loginBtn = document.getElementById('btn-login-submit');
+  const decBox = document.getElementById('decision-box');
+
+  // Remove all active styles first
+  [inpUser, inpPass, inpCap, loginBtn].forEach(el => el.classList.remove('step-active'));
+  [fgUser, fgPass, fgCap].forEach(el => el.classList.remove('dimmed'));
+
+  if (step === 1) {
+    // Only username active; rest dimmed
+    fgPass.classList.add('dimmed');
+    fgCap.classList.add('dimmed');
+    inpUser.disabled = false;
+    inpPass.disabled = true;
+    inpCap.disabled  = true;
+    inpUser.classList.add('step-active');
+    loginBtn.disabled = true;
+    loginBtn.classList.remove('step-active');
+    decBox.style.display = 'none';
+    ic.badge.textContent = 'STEP 1 OF 4';
+    ic.title.textContent = 'Enter Your Username / Customer ID';
+    ic.body.innerHTML = 'This is where you enter your <strong>Username</strong> or <strong>Customer ID</strong>. For this practice demo, use any sample text — e.g. <strong>"SampleUser123"</strong>.<br><span style="color:var(--sbi-red);font-weight:600;"> Do NOT enter your real banking username.</span>';
+    ic.note.innerHTML = '';
+    prog.style.width = '25%';
+    progLabel.textContent = 'Step 1 of 4 — Enter Username';
+    inpUser.focus();
+  } else if (step === 2) {
+    fgPass.classList.remove('dimmed');
+    fgCap.classList.add('dimmed');
+    inpPass.disabled = false;
+    inpCap.disabled  = true;
+    inpPass.classList.add('step-active');
+    loginBtn.disabled = true;
+    decBox.style.display = 'none';
+    ic.badge.textContent = 'STEP 2 OF 4';
+    ic.title.textContent = 'Enter Your Password';
+    ic.body.innerHTML = 'Now type your password. For safety, <span style="color:var(--sbi-red);font-weight:600;">do NOT enter your real banking password</span>. You can type any sample password like <strong>"Practice@1"</strong>.';
+    ic.note.innerHTML = '';
+    prog.style.width = '50%';
+    progLabel.textContent = 'Step 2 of 4 — Enter Password';
+    inpPass.focus();
+  } else if (step === 3) {
+    fgCap.classList.remove('dimmed');
+    inpCap.disabled = false;
+    inpCap.classList.add('step-active');
+    loginBtn.disabled = true;
+    decBox.style.display = 'none';
+    ic.badge.textContent = 'STEP 3 OF 4';
+    ic.title.textContent = 'Enter the Captcha Text';
+    ic.body.innerHTML = 'Type the text shown in the image box. The captcha for this training demo is shown as a hint below the image. This step helps verify you are a real person.';
+    ic.note.innerHTML = '';
+    prog.style.width = '65%';
+    progLabel.textContent = 'Step 3 of 4 — Enter Captcha';
+    inpCap.focus();
+  } else if (step === 4) {
+    inpCap.classList.remove('step-active');
+    decBox.style.display = 'block';
+    loginBtn.disabled = true;
+    ic.badge.textContent = 'STEP 4 OF 4';
+    ic.title.textContent = 'Do you remember your password?';
+    ic.body.innerHTML = 'Before we log in, let\'s make sure you know what to do if you forget your password. Answer the question below. Take your time — this is only practice!';
+    ic.note.innerHTML = '<span style="color:var(--sbi-green);font-weight:600;">✅ Captcha accepted!</span>';
+    prog.style.width = '80%';
+    progLabel.textContent = 'Step 4 of 4 — Confirm & Login';
+    decBox.scrollIntoView({behavior:'smooth', block:'nearest'});
+  } else if (step === 5) {
+    decBox.style.display = 'none';
+    loginBtn.disabled = false;
+    loginBtn.classList.add('step-active');
+    ic.badge.textContent = 'FINAL STEP';
+    ic.title.textContent = 'Click Login to Continue';
+    ic.body.innerHTML = 'Now click the <strong>Login</strong> button to continue. This is only a practice login and does not connect to the real bank.';
+    ic.note.innerHTML = '<span style="color:var(--sbi-green);font-weight:600;">✅ All details entered. You are ready!</span>';
+    prog.style.width = '100%';
+    progLabel.textContent = 'Final Step — Click Login';
+    loginBtn.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+function onUsernameInput() {
+  const v = document.getElementById('inp-username').value.trim();
+  clearTimeout(stepTimer);
+  if (v.length > 0) {
+    document.getElementById('note-username').classList.add('show');
+    document.getElementById('err-username').classList.remove('show');
+    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  }
+}
+
+function onPasswordInput() {
+  const v = document.getElementById('inp-password').value;
+  clearTimeout(stepTimer); // Reset timer while typing
+  
+  // Regex: Min 8 chars, 1 letter, 1 number, 1 symbol
+  const strongPwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+  const errEl = document.getElementById('err-password');
+  const noteEl = document.getElementById('note-password');
+
+  if (strongPwRegex.test(v)) {
+    noteEl.classList.add('show');
+    errEl.classList.remove('show');
+    stepTimer = setTimeout(() => activateLoginStep(3), 2000); // 5-second delay
+  } else {
+    noteEl.classList.remove('show');
+    errEl.classList.add('show');
+  }
+}
+
+function onCaptchaInput() {
+  const v = document.getElementById('inp-captcha').value.trim().toLowerCase();
+  const correct = state.captchaCode.toLowerCase();
+  clearTimeout(stepTimer);
+  if (v === correct) {
+    document.getElementById('note-captcha').classList.add('show');
+    document.getElementById('err-captcha').classList.remove('show');
+    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  } else {
+    document.getElementById('note-captcha').classList.remove('show');
+  }
+}
+
+function enableLoginButton() {
+  // User said "No, I remember my password"
+  activateLoginStep(5);
+}
+
+function togglePw() {
+  const inp = document.getElementById('inp-password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function doLogin() {
+  const username = document.getElementById('inp-username').value.trim();
+  const password = document.getElementById('inp-password').value;
+  if (!username || !password) {
+    alert('Please complete all fields before logging in.');
+    return;
+  }
+  setPostLoginUI(true);
+  document.getElementById('hamburger-btn').classList.add('step-active');
+  const now = new Date();
+  document.getElementById('last-login-time').textContent = now.toLocaleDateString('en-IN') + ' [' + now.toLocaleTimeString('en-IN') + ' IST]';
+  document.getElementById('ws-date').innerHTML = now.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + '<br>' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' IST';
+  setBreadcrumb('Home Dashboard');
+  showScreen('screen-dashboard');
+  speak('dashboard');
+}
+
+function resetLoginForm() {
+    clearTimeout(stepTimer);
+  document.getElementById('inp-username').value = '';
+  document.getElementById('inp-password').value = '';
+  document.getElementById('inp-captcha').value = '';
+  document.getElementById('note-username').classList.remove('show');
+  document.getElementById('note-password').classList.remove('show');
+  document.getElementById('note-captcha').classList.remove('show');
+  activateLoginStep(1);
+}
+
+function refreshCaptcha(ctx) {
+    clearTimeout(stepTimer);
+  state.captchaIdx = (state.captchaIdx + 1) % state.captchas.length;
+  state.captchaCode = state.captchas[state.captchaIdx];
+  if (ctx === 'login') {
+    document.getElementById('captcha-display').textContent = state.captchaCode;
+    document.getElementById('captcha-hint').textContent = state.captchaCode;
+    document.getElementById('inp-captcha').value = '';
+    document.getElementById('note-captcha').classList.remove('show');
+  }
+}
+
+/* =====================================================================
+   FLOW B: FORGOT PASSWORD
+   ===================================================================== */
+function goForgotPassword() {
+  state.fromForgot = true;
+  state.forgotStep = 1;
+  showScreen('screen-forgot');
+  activateForgotStep(1);
+}
+
+function activateForgotStep(step) {
+  state.forgotStep = step;
+  const ic = {
+    badge: document.getElementById('forgot-ic-badge'),
+    title: document.getElementById('forgot-ic-title'),
+    body:  document.getElementById('forgot-ic-body'),
+    note:  document.getElementById('forgot-ic-note')
+  };
+  const prog = document.getElementById('forgot-progress');
+  const progLabel = document.getElementById('forgot-progress-label');
+
+  const fgs = ['fg-fp-user','fg-fp-acc','fg-fp-mobile','fg-fp-dob','fg-fp-otp','fg-fp-newpw','fg-fp-confirmpw'];
+  const inps = ['fp-username','fp-acc','fp-mobile','fp-dob','fp-otp','fp-newpw','fp-confirmpw'];
+
+  // Disable all
+  inps.forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.disabled = true; el.classList.remove('step-active'); }
+  });
+  fgs.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('dimmed');
+  });
+  document.getElementById('btn-fp-reset').disabled = true;
+
+  const stepMap = [
+    null,
+    { fg:'fg-fp-user',      inp:'fp-username',  prog:16,  label:'Step 1 of 6 — Enter Username',       badge:'STEP B1 / 6', title:'Enter Your Username', body:'First, enter your Username or Customer ID so the system knows which account to recover. For this practice demo, use sample details only. <span style="color:var(--sbi-red);font-weight:600;">Do NOT use real credentials.</span>' },
+    { fg:'fg-fp-acc',       inp:'fp-acc',        prog:33,  label:'Step 2 of 6 — Account Number',       badge:'STEP B2 / 6', title:'Enter Your Account Number', body:'Now enter your account number. This helps verify your identity. For practice, you may use a sample number like <strong>"0000123456789"</strong>. <span style="color:var(--sbi-red);font-weight:600;">Do NOT use a real account number.</span>' },
+    { fg:'fg-fp-mobile',    inp:'fp-mobile',     prog:50,  label:'Step 3 of 6 — Mobile & Date of Birth', badge:'STEP B3 / 6', title:'Enter Registered Mobile Number', body:'Enter the mobile number registered with your bank account. For practice, use a sample number like <strong>"9999999999"</strong>. <span style="color:var(--sbi-red);font-weight:600;">Do NOT enter your real mobile number.</span>' },
+    { fg:'fg-fp-dob',       inp:'fp-dob',        prog:50,  label:'Step 3b of 6 — Date of Birth',        badge:'STEP B3b', title:'Enter Date of Birth', body:'Enter your date of birth as verification. For practice, use a sample date like <strong>"01/01/1990"</strong>. <span style="color:var(--sbi-red);font-weight:600;">Do NOT enter your real date of birth.</span>' },
+    { fg:'fg-fp-otp',       inp:'fp-otp',        prog:66,  label:'Step 4 of 6 — OTP Verification',      badge:'STEP B4 / 6', title:'Enter the OTP', body:'A One Time Password (OTP) would normally be sent to your mobile. In this training demo, the practice OTP is shown above the input box. Type <strong>123456</strong> to continue. <span style="color:var(--sbi-red);font-weight:600;">Do NOT enter a real OTP.</span>' },
+    { fg:'fg-fp-newpw',     inp:'fp-newpw',      prog:83,  label:'Step 5 of 6 — Create New Password',   badge:'STEP B5 / 6', title:'Create Your New Password', body:'Create a new password for practice. <span style="color:var(--sbi-red);font-weight:600;">Do NOT use your real password.</span> Use a sample like <strong>"Practice@1"</strong>. Passwords should be 8+ characters with letters and numbers.' },
+    { fg:'fg-fp-confirmpw', inp:'fp-confirmpw',  prog:100, label:'Step 6 of 6 — Confirm Password',      badge:'STEP B6 / 6', title:'Confirm Your New Password', body:'Type the same practice password again to confirm. Both passwords must match to continue.' },
+  ];
+
+  if (step >= 1 && step <= 7) {
+    const s = stepMap[step];
+    const fgEl  = document.getElementById(s.fg);
+    const inpEl = document.getElementById(s.inp);
+    if(fgEl)  fgEl.classList.remove('dimmed');
+    if(inpEl){ inpEl.disabled = false; inpEl.classList.add('step-active'); inpEl.focus(); }
+    prog.style.width = s.prog + '%';
+    progLabel.textContent = s.label;
+    ic.badge.textContent = s.badge;
+    ic.title.textContent = s.title;
+    ic.body.innerHTML = s.body;
+    ic.note.innerHTML = '';
+  }
+  if (step === 7) {
+    // Show Reset button as active too
+    document.getElementById('fg-fp-confirmpw').classList.remove('dimmed');
+  }
+}
+
+function fpStep1Input() {
+  const v = document.getElementById('fp-username').value.trim();
+  clearTimeout(stepTimer);
+  if (v) { document.getElementById('fp-note-user').classList.add('show'); document.getElementById('fp-err-user').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+ }
+}
+function fpStep2Input() {
+  const v = document.getElementById('fp-acc').value.trim();
+  clearTimeout(stepTimer);
+  if (v) { document.getElementById('fp-note-acc').classList.add('show'); document.getElementById('fp-err-acc').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+ }
+}
+function fpStep3Input() {
+  const v = document.getElementById('fp-mobile').value.trim();
+  clearTimeout(stepTimer);
+  if (v.length >= 6) { document.getElementById('fp-note-mobile').classList.add('show'); document.getElementById('fp-err-mobile').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+}
+}
+function fpStep3bInput() {
+  const v = document.getElementById('fp-dob').value.trim();
+  clearTimeout(stepTimer);
+  if (v.length >= 6) { document.getElementById('fp-note-dob').classList.add('show'); document.getElementById('fp-err-dob').classList.remove('show'); stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+ }
+}
+function fpOtpInput() {
+  const v = document.getElementById('fp-otp').value.trim();
+  document.getElementById('fp-err-otp').classList.remove('show');
+  clearTimeout(stepTimer);
+  if (v === '123456') {
+    document.getElementById('fp-note-otp').classList.add('show');
+    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  } else if (v.length === 6) {
+    document.getElementById('fp-err-otp').classList.add('show');
+  }
+}
+function fpNewPwInput() {
+  const v = document.getElementById('fp-newpw').value;
+  clearTimeout(stepTimer); // Reset timer while typing
+  
+  const strongPwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+  const errEl = document.getElementById('fp-err-newpw');
+  const noteEl = document.getElementById('fp-note-newpw');
+
+  if (strongPwRegex.test(v)) { 
+    noteEl.classList.add('show'); 
+    errEl.classList.remove('show'); 
+    stepTimer = setTimeout(() => activateForgotStep(7), 2000); 
+  } else {
+    noteEl.classList.remove('show');
+    errEl.classList.add('show');
+  }
+}
+function fpConfirmPwInput() {
+  const p1 = document.getElementById('fp-newpw').value;
+  const p2 = document.getElementById('fp-confirmpw').value;
+  
+  clearTimeout(stepTimer); // Resets the timer while typing
+  
+  if (!p2) return;
+  
+  if (p1 === p2) {
+    // Show success message immediately
+    document.getElementById('fp-note-confirmpw').classList.add('show');
+    document.getElementById('fp-err-confirmpw').classList.remove('show');
+    
+    // Wait 5 seconds, then light up the Reset button
+    stepTimer = setTimeout(() => {
+      const btn = document.getElementById('btn-fp-reset');
+      btn.disabled = false;
+      btn.classList.add('step-active'); // add glow
+      document.getElementById('fg-fp-confirmpw').classList.remove('dimmed');
+      btn.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+    }, 5000);
+
+  } else if (p2.length >= p1.length) {
+    // Show error if they don't match
+    document.getElementById('fp-note-confirmpw').classList.remove('show');
+    document.getElementById('fp-err-confirmpw').classList.add('show');
+  }
+}
+function toggleFpPw(id) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function doPasswordReset() {
+  showScreen('screen-forgot-success');
+}
+function backToLogin() {
+  showScreen('screen-login');
+  activateLoginStep(1);
+}
+
+/* =====================================================================
+   FLOW C: RETURN TO LOGIN AFTER RESET
+   ===================================================================== */
+function returnToLoginAfterReset() {
+  showScreen('screen-login-after-reset');
+}
+function toggleArPw() {
+  const inp = document.getElementById('ar-password');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+function doLoginAfterReset() {
+  const u = document.getElementById('ar-username').value.trim();
+  const p = document.getElementById('ar-password').value;
+  const err = document.getElementById('ar-err');
+  
+  const strongPwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+  
+  if (!u || !p) {
+    err.textContent = 'Please enter both username and password to continue.';
+    err.classList.add('show');
+    return;
+  } else if (!strongPwRegex.test(p)) {
+    err.textContent = 'Please enter the strong password you just created (min 8 chars, 1 letter, 1 num, 1 symbol).';
+    err.classList.add('show');
+    return;
+  }
+
+  err.classList.remove('show');
+  setPostLoginUI(true);
+  document.getElementById('hamburger-btn').classList.add('step-active');
+  const now = new Date();
+  document.getElementById('last-login-time').textContent = now.toLocaleDateString('en-IN') + ' [' + now.toLocaleTimeString('en-IN') + ' IST]';
+  document.getElementById('ws-date').innerHTML = now.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}) + '<br>' + now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) + ' IST';
+  setBreadcrumb('Home Dashboard');
+  showScreen('screen-dashboard');
+}
+
+/* =====================================================================
+   FLOW D: HAMBURGER / SIDEBAR
+   ===================================================================== */
+document.getElementById('hamburger-btn').addEventListener('click', openSidebar);
+
+function openSidebar() {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebar-overlay').style.display = 'block';
+  document.getElementById('hamburger-btn').classList.remove('step-active');
+  // Highlight My Accounts menu item
+  document.getElementById('menu-myacc').classList.add('step-active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').style.display = 'none';
+  document.getElementById('menu-myacc').classList.remove('step-active');
+}
+
+/* =====================================================================
+   FLOW E: MY ACCOUNTS
+   ===================================================================== */
+function goMyAccounts() {
+  closeSidebar();
+  setBreadcrumb('My Accounts & Profile');
+  showScreen('screen-myaccounts');
+  // Highlight Account Statement option
+  setTimeout(()=>{
+    document.getElementById('opt-acc-stmt').classList.add('step-active');
+    document.getElementById('opt-acc-stmt').scrollIntoView({behavior:'smooth', block:'center'});
+  }, 200);
+  speak('myaccounts');
+}
+
+/* =====================================================================
+   FLOW G: ACCOUNT STATEMENT
+   ===================================================================== */
+function goAccountStatement() {
+  setBreadcrumb('My Accounts & Profile / Account Statement');
+  showScreen('screen-statement');
+  activateStmtStep(1);
+}
+
+function activateStmtStep(step) {
+  state.stmtStep = step;
+  const ic = {
+    badge: document.getElementById('stmt-ic-badge'),
+    title: document.getElementById('stmt-ic-title'),
+    body:  document.getElementById('stmt-ic-body'),
+    note:  document.getElementById('stmt-ic-note')
+  };
+  const prog = document.getElementById('stmt-progress');
+  const progLabel = document.getElementById('stmt-progress-label');
+
+  const sgAcc    = document.getElementById('sg-acc');
+  const sgPeriod = document.getElementById('sg-period');
+  const sgFormat = document.getElementById('sg-format');
+  const sgBtns   = document.getElementById('sg-buttons');
+  const goBtn    = document.getElementById('btn-go-stmt');
+
+  [sgPeriod, sgFormat, sgBtns].forEach(el => el.classList.add('dimmed'));
+  goBtn.disabled = true;
+
+  if (step === 1) {
+    ic.badge.textContent = 'STEP G1 / 5';
+    ic.title.textContent = 'Select Your Account';
+    ic.body.innerHTML = 'First, choose which account you want the statement for. In this demo, a sample Savings Account is shown. Click the radio button to select it.';
+    ic.note.innerHTML = '';
+    prog.style.width = '20%';
+    progLabel.textContent = 'Step 1 of 5 — Select Account';
+  } else if (step === 2) {
+    sgPeriod.classList.remove('dimmed');
+    ic.badge.textContent = 'STEP G2 / 5';
+    ic.title.textContent = 'Choose the Statement Period';
+    ic.body.innerHTML = 'Now choose the period for which you want the statement. You can select <strong>By Date</strong>, By Month, Last 6 Months, or Financial Year. For practice, try entering sample dates like <strong>01/01/2025</strong> to <strong>31/03/2025</strong>.';
+    ic.note.innerHTML = '<span style="color:var(--sbi-green)">✅ Account selected!</span>';
+    prog.style.width = '40%';
+    progLabel.textContent = 'Step 2 of 5 — Select Period';
+    sgPeriod.scrollIntoView({behavior:'smooth', block:'nearest'});
+  } else if (step === 3) {
+    sgPeriod.classList.remove('dimmed');
+    sgFormat.classList.remove('dimmed');
+    ic.badge.textContent = 'STEP G3 / 5';
+    ic.title.textContent = 'Choose Output Format';
+    ic.body.innerHTML = 'Choose how you want to view or download the statement. Select <strong>View</strong> to see it on screen, or choose PDF/Excel to download. Then click the <strong>Go</strong> button.';
+    ic.note.innerHTML = '<span style="color:var(--sbi-green)">✅ Period selected!</span>';
+    prog.style.width = '60%';
+    progLabel.textContent = 'Step 3 of 5 — Choose Format';
+    sgFormat.scrollIntoView({behavior:'smooth', block:'nearest'});
+  } else if (step === 4) {
+    sgPeriod.classList.remove('dimmed');
+    sgFormat.classList.remove('dimmed');
+    sgBtns.classList.remove('dimmed');
+    goBtn.disabled = false;
+    goBtn.classList.add('step-active');
+    ic.badge.textContent = 'STEP G4 / 5';
+    ic.title.textContent = 'Click "Go" to Generate Statement';
+    ic.body.innerHTML = 'Now click the <strong>Go</strong> button to generate your sample statement. This will show a preview of your transactions below.';
+    ic.note.innerHTML = '<span style="color:var(--sbi-green)">✅ Format selected!</span>';
+    prog.style.width = '80%';
+    progLabel.textContent = 'Step 4 of 5 — Generate Statement';
+    sgBtns.scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+function onAccSelect() {
+    clearTimeout(stepTimer);
+  document.getElementById('selected-acc-disp').textContent = '0000XXXXXXXX01';
+  document.getElementById('stmt-note-acc').classList.add('show');
+  stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+}
+
+function onPeriodChange(el) {
+  const val = el.value;
+  clearTimeout(stepTimer);
+  document.getElementById('period-bydate').style.display   = val==='bydate' ? 'block' : 'none';
+  document.getElementById('period-bymonth').style.display  = val==='bymonth' ? 'block' : 'none';
+  document.getElementById('period-fy').style.display       = val==='fy' ? 'block' : 'none';
+  if (val === '6months') {
+    document.getElementById('stmt-note-period').classList.add('show');
+    document.getElementById('stmt-err-period').classList.remove('show');
+    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  }
+}
+
+function onDateInput() {
+  // Check if period is filled
+  clearTimeout(stepTimer);
+  const pType = document.querySelector('input[name="period-type"]:checked').value;
+  let valid = false;
+  if (pType === 'bydate') {
+    const f = document.getElementById('stmt-from').value.trim();
+    const t = document.getElementById('stmt-to').value.trim();
+    valid = f.length >= 6 && t.length >= 6;
+  } else if (pType === 'bymonth') {
+    valid = !!document.getElementById('stmt-from-month').value && !!document.getElementById('stmt-to-month').value;
+  } else if (pType === 'fy') {
+    valid = !!document.getElementById('stmt-fy').value;
+  } else if (pType === '6months') {
+    valid = true;
+  }
+  if (valid && state.stmtStep === 2) {
+    document.getElementById('stmt-note-period').classList.add('show');
+    document.getElementById('stmt-err-period').classList.remove('show');
+    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  }
+}
+
+function onFormatChange() {
+    clearTimeout(stepTimer);
+  if (state.stmtStep === 3) {
+    document.getElementById('stmt-note-format').classList.add('show');
+    stepTimer = setTimeout(() => activateLoginStep(2), 2000);
+  }
+}
+
+function generateStatement() {
+  document.getElementById('btn-go-stmt').classList.remove('step-active');
+  document.getElementById('stmt-progress').style.width = '95%';
+  document.getElementById('stmt-progress-label').textContent = 'Step 5 of 5 — Download Statement';
+  document.getElementById('stmt-ic-badge').textContent = 'STEP G5 / 5';
+  document.getElementById('stmt-ic-title').textContent = 'Download Your Statement';
+  document.getElementById('stmt-ic-body').innerHTML = 'Your sample statement has been generated below. Review the transactions. When ready, click <strong>Download Statement</strong> to complete the practice. In a real app, this would save the file to your device.';
+  document.getElementById('stmt-ic-note').innerHTML = '<span style="color:var(--sbi-green)">✅ Statement generated successfully!</span>';
+  document.getElementById('stmt-preview').style.display = 'block';
+  document.getElementById('btn-download-stmt').classList.add('step-active');
+  document.getElementById('stmt-preview').scrollIntoView({behavior:'smooth'});
+}
+
+function downloadStatement() {
+  document.getElementById('btn-download-stmt').classList.remove('step-active');
+  document.getElementById('stmt-progress').style.width = '100%';
+  document.getElementById('stmt-progress-label').textContent = 'Completed! ✅';
+  document.getElementById('stmt-ic-badge').textContent = '✅ DONE';
+  document.getElementById('stmt-ic-title').textContent = 'Excellent! Practice Complete!';
+  document.getElementById('stmt-ic-body').innerHTML = '🎉 <strong>Excellent! You have completed the bank statement download practice.</strong> In a real app, the statement file would now be saved to your device. <br><br>You are now ready to do this on your own!';
+  setTimeout(()=>showScreen('screen-feedback'), 2200);
+}
+
+function resetStatement() {
+    clearTimeout(stepTimer);
+  document.getElementById('stmt-acc-radio').checked = false;
+  document.getElementById('selected-acc-disp').textContent = '—';
+  document.getElementById('stmt-from').value = '';
+  document.getElementById('stmt-to').value = '';
+  document.getElementById('stmt-preview').style.display = 'none';
+  document.getElementById('stmt-note-acc').classList.remove('show');
+  document.getElementById('stmt-note-period').classList.remove('show');
+  document.getElementById('stmt-note-format').classList.remove('show');
+  activateStmtStep(1);
+}
+
+/* =====================================================================
+   FLOW H: FEEDBACK
+   ===================================================================== */
+function selectFb(btn, group) {
+  const container = btn.closest('.fb-options');
+  container.querySelectorAll('.fb-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function practiceAgain() {
+  setPostLoginUI(false);
+  state.loginStep = 1;
+  state.forgotStep = 1;
+  state.stmtStep = 1;
+  state.fromForgot = false;
+  resetLoginForm();
+  showScreen('screen-disclaimer');
+}
+function finishTraining() {
+  showScreen('screen-finish');
+}
+
+/* =====================================================================
+   LOGOUT
+   ===================================================================== */
+function doLogout() {
+  closeSidebar();
+  if (confirm('Are you sure you want to logout from the training simulation?')) {
+    setPostLoginUI(false);
+    resetLoginForm();
+    showScreen('screen-disclaimer');
+  }
+}
+
+/* =====================================================================
+   SPEECH SYNTHESIS
+   ===================================================================== */
+const speechTexts = {
+  'login': () => document.getElementById('login-ic-body').innerText,
+  'forgot': () => document.getElementById('forgot-ic-body').innerText,
+  'dashboard': () => 'Excellent! You have successfully completed the login practice. Now look at the top-left area of the page header. You will see three horizontal lines. That is the Main Menu button. Click the three lines to continue.',
+  'myaccounts': () => 'You are now inside the My Accounts section. To get a copy of your bank statement, choose Account Statement, which is highlighted on screen.',
+  'statement': () => document.getElementById('stmt-ic-body').innerText,
+  'stmtdownload': () => 'Your sample statement has been generated. Review the transactions. When ready, click Download Statement to complete the practice.',
+};
+
+function speak(ctx) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const text = typeof speechTexts[ctx] === 'function' ? speechTexts[ctx]() : speechTexts[ctx];
+  if (!text) return;
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'en-IN';
+  utt.rate = 0.88;
+  utt.pitch = 1.0;
+  window.speechSynthesis.speak(utt);
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+window.addEventListener('load', () => {
+  showScreen('screen-disclaimer');
+});
+</script>
+</body>
+</html>
