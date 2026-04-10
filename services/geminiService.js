@@ -124,6 +124,7 @@ IMPORTANT:
 - ${buildScenarioGuidance(scamType)}
 - ${getRetryGuidance(refusalCount)}
 
+Always remember to return ONLY AND STRICTLY IN JSON FORMAT GIVEN BELOW!
 Return ONLY valid JSON.
 Do NOT include markdown.
 Do NOT include code fences.
