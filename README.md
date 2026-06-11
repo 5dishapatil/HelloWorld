@@ -1,6 +1,6 @@
-# SafetyNet / Guardian Path
+# SafetyNet
 
-SafetyNet, also referred to in the code as Guardian Path, is a digital-safety learning platform built for elders, first-time internet users, and anyone who wants to practice recognizing online scams in a safe environment.
+SafetyNet, is a digital-safety learning platform built for elders, first-time internet users, and anyone who wants to practice recognizing online scams in a safe environment.
 
 The app combines guided sandbox exercises, scam-awareness lessons, quizzes, badges, a voice-guided helper called Bambi, and an AI-powered scam simulator. Nothing in the training modules uses real bank accounts, real identity data, or real financial actions.
 
